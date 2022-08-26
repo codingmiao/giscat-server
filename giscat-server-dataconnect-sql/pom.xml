@@ -10,6 +10,16 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>giscat-server-dataconnect-sql</artifactId>
-    <description>数据连接-数据库实现</description>
+    <description>数据连接-关系型数据库</description>
+    <dependencies>
+        <dependency>
+            <groupId>org.wowtools</groupId>
+            <artifactId>giscat-server-dataconnect-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

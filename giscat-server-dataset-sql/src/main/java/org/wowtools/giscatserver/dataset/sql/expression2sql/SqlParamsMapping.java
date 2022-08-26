@@ -17,17 +17,14 @@
  *  specific language governing permissions and limitations
  *  under the License.
  ****************************************************************/
-package org.wowtools.giscatserver.dataconnect.api;
-
-import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
-
-import java.util.Map;
+package org.wowtools.giscatserver.dataset.sql.expression2sql;
 
 /**
- * 数据连接加载器，与DataConnect成对编写，用于将配置表中的配置信息加载为DataConnect对象
+ * 将形如 select * from table where a = $x and b = $y转为select * from table where a = ? and b = ? (1:$x,2:$y)，
+ * 以便后续能动态绑定参数
  *
- * @param <T> 加载器加载的数据连接类型
+ * @author liuyu
+ * @date 2022/8/23
  */
-public abstract class DataConnectLoader<T extends DataConnect> {
-     public abstract T load(Map<String, Object> dataConnectConfig) throws ConfigException;
+public class SqlParamsMapping {
 }

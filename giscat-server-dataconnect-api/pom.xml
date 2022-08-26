@@ -11,5 +11,11 @@
 
     <artifactId>giscat-server-dataconnect-api</artifactId>
     <description>数据连接接口及工具类</description>
+    <dependencies>
+        <dependency>
+            <groupId>org.wowtools</groupId>
+            <artifactId>giscat-server-common</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

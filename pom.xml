@@ -30,6 +30,11 @@
         <dependencies>
             <dependency>
                 <groupId>org.wowtools</groupId>
+                <artifactId>giscat-server-common</artifactId>
+                <version>1.0.0-STABLE</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wowtools</groupId>
                 <artifactId>giscat-server-dataconnect-api</artifactId>
                 <version>1.0.0-STABLE</version>
             </dependency>
@@ -54,7 +59,11 @@
                 <groupId>org.wowtools</groupId>
                 <version>1.4.0-STABLE</version>
             </dependency>
-
+            <dependency>
+                <groupId>com.zaxxer</groupId>
+                <artifactId>HikariCP</artifactId>
+                <version>5.0.1</version>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>

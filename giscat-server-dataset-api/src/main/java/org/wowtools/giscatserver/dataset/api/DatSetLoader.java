@@ -19,13 +19,15 @@
  ****************************************************************/
 package org.wowtools.giscatserver.dataset.api;
 
+import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
+
 import java.util.Map;
 
 /**
- * 数据集加载器，用于将配置表中的配置信息加载为DatSet对象
+ * 数据集加载器，与DatSet成对编写，用于将配置表中的配置信息加载为DatSet对象
  *
  * @param <T> 加载器加载的数据集类型
  */
-public interface DatSetLoader<T extends DatSet> {
-    T load(Map<String, Object> dataSetConfig);
+public abstract class DatSetLoader<T extends DatSet> {
+    public abstract T load(Map<String, Object> dataSetConfig) throws ConfigException;
 }

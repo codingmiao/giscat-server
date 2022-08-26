@@ -17,38 +17,54 @@
  *  specific language governing permissions and limitations
  *  under the License.
  ****************************************************************/
-package org.wowtools.giscatserver.dataset.api;
+package org.wowtools.giscatserver.dataset.sql;
 
 
 import org.wowtools.giscat.vector.mbexpression.Expression;
-import org.wowtools.giscatserver.dataconnect.api.DataConnect;
-
-import java.util.Map;
+import org.wowtools.giscatserver.dataconnect.sql.SqlDataConnect;
+import org.wowtools.giscatserver.dataset.api.DatSet;
+import org.wowtools.giscatserver.dataset.api.ExpressionDialect;
+import org.wowtools.giscatserver.dataset.api.FeatureResultSet;
+import org.wowtools.giscatserver.dataset.sql.expression2sql.Expression2Sql;
 
 /**
- * 数据集。数据集是数据连接对象中的一个存储单元，例如关系型数据库中的一张表
- *
- * @param <DC> 数据集所需的数据库连接
- * @param <ED> 数据集方言(如果有)
+ * 关系型数据库数据集
  */
-public abstract class DatSet<DC extends DataConnect, ED extends ExpressionDialect> {
+public abstract class SqlDatSet extends DatSet<SqlDataConnect, SqlExpressionDialect> {
 
+    private final SqlDataConnect dataConnect;
+    private final Expression2SqlManager expression2SqlManager;
+
+    public SqlDatSet(SqlDataConnect dataConnect, Expression2SqlManager expression2SqlManager) {
+        this.dataConnect = dataConnect;
+        this.expression2SqlManager = expression2SqlManager;
+    }
 
     /**
      * 是否支持方言表达式查询
      *
      * @return true/false
      */
-    public abstract boolean isSupportDialect();
+    @Override
+    public boolean isSupportDialect() {
+        return true;
+    }
+
 
 
     /**
-     * 将表达式转为方言。如果此数据集不支持方言，则抛出UnsupportedOperationException
+     * 将表达式转为sql方言
      *
      * @param expression 表达式
      * @return 方言
      */
-    public abstract ExpressionDialect buildExpressionDialect(Expression expression);
+    @Override
+    public SqlExpressionDialect buildExpressionDialect(Expression expression){
+        Expression2Sql expression2Sql = expression2SqlManager.getExpression2Sql(expression);
+        String wherePart = expression2Sql.convert(expression, expression2SqlManager).str;
+        //TODO
+        return null;
+    }
 
     /**
      * 用方言进行条件查询。如果此数据集不支持方言，则抛出UnsupportedOperationException
@@ -56,6 +72,7 @@ public abstract class DatSet<DC extends DataConnect, ED extends ExpressionDialec
      * @param expressionDialect 方言
      * @return FeatureResultSet
      */
+    @Override
     public abstract FeatureResultSet queryByDialect(ExpressionDialect expressionDialect);
 
     /**
@@ -64,6 +81,7 @@ public abstract class DatSet<DC extends DataConnect, ED extends ExpressionDialec
      * @param expression 表达式
      * @return FeatureResultSet
      */
+    @Override
     public abstract FeatureResultSet queryByExpression(Expression expression);
 
 
@@ -76,6 +94,7 @@ public abstract class DatSet<DC extends DataConnect, ED extends ExpressionDialec
      * @param n                 最多返回几条数据
      * @return FeatureResultSet
      */
+    @Override
     public abstract FeatureResultSet nearestByDialect(ExpressionDialect expressionDialect, double x, double y, int n);
 
     /**
@@ -87,6 +106,7 @@ public abstract class DatSet<DC extends DataConnect, ED extends ExpressionDialec
      * @param n          最多返回几条数据
      * @return FeatureResultSet
      */
+    @Override
     public abstract FeatureResultSet nearestByExpression(Expression expression, double x, double y, int n);
 
 }

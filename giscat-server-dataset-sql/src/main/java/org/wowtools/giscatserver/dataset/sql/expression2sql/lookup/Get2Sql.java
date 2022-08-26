@@ -17,17 +17,27 @@
  *  specific language governing permissions and limitations
  *  under the License.
  ****************************************************************/
-package org.wowtools.giscatserver.dataconnect.api;
+package org.wowtools.giscatserver.dataset.sql.expression2sql.lookup;
 
-import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
-
-import java.util.Map;
+import org.wowtools.giscat.vector.mbexpression.Expression;
+import org.wowtools.giscat.vector.mbexpression.lookup.Get;
+import org.wowtools.giscatserver.dataset.sql.Expression2SqlManager;
+import org.wowtools.giscatserver.dataset.sql.expression2sql.Expression2Sql;
 
 /**
- * 数据连接加载器，与DataConnect成对编写，用于将配置表中的配置信息加载为DataConnect对象
- *
- * @param <T> 加载器加载的数据连接类型
+ * @author liuyu
+ * @date 2022/8/23
  */
-public abstract class DataConnectLoader<T extends DataConnect> {
-     public abstract T load(Map<String, Object> dataConnectConfig) throws ConfigException;
+public class Get2Sql extends Expression2Sql<Get> {
+    @Override
+    public Part convert(Get expression, Expression2SqlManager expression2SqlManager) {
+        Object o = expression.getExpressionArray().get(1);
+        if (o instanceof Expression) {
+            Expression subExpression = (Expression) o;
+            Expression2Sql subExpression2Sql = expression2SqlManager.getExpression2Sql(subExpression);
+            return subExpression2Sql.convert(subExpression, expression2SqlManager);
+        } else {
+            return new Part(String.valueOf(o), true);
+        }
+    }
 }

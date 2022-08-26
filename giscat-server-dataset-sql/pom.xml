@@ -11,5 +11,28 @@
 
     <artifactId>giscat-server-dataset-sql</artifactId>
     <description>数据集,sql形式的数据集实现,抽象类，需根据数据库再具体实现</description>
+    <dependencies>
+        <dependency>
+            <groupId>org.wowtools</groupId>
+            <artifactId>giscat-server-dataconnect-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wowtools</groupId>
+            <artifactId>giscat-server-dataset-api</artifactId>
+            <version>1.0.0-STABLE</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wowtools</groupId>
+            <artifactId>giscat-server-dataconnect-sql</artifactId>
+            <version>1.0.0-STABLE</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 </project>

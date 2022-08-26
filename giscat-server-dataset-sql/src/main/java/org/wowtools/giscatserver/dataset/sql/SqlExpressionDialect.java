@@ -17,17 +17,19 @@
  *  specific language governing permissions and limitations
  *  under the License.
  ****************************************************************/
-package org.wowtools.giscatserver.dataconnect.api;
+package org.wowtools.giscatserver.dataset.sql;
 
-import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
-
-import java.util.Map;
+import org.wowtools.giscat.vector.mbexpression.Expression;
+import org.wowtools.giscatserver.dataset.api.ExpressionDialect;
 
 /**
- * 数据连接加载器，与DataConnect成对编写，用于将配置表中的配置信息加载为DataConnect对象
- *
- * @param <T> 加载器加载的数据连接类型
+ * sql方言，将表达式转换为sql语句
+ * @author liuyu
+ * @date 2022/8/23
  */
-public abstract class DataConnectLoader<T extends DataConnect> {
-     public abstract T load(Map<String, Object> dataConnectConfig) throws ConfigException;
+public class SqlExpressionDialect extends ExpressionDialect {
+    public SqlExpressionDialect(Expression expression) {
+        super(expression);
+
+    }
 }

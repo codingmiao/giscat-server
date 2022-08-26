@@ -17,18 +17,39 @@
  *  specific language governing permissions and limitations
  *  under the License.
  ****************************************************************/
-package org.wowtools.giscatserver.dataconnect.api;
+package org.wowtools.giscatserver.dataconnect.sql;
 
-import java.util.HashMap;
-import java.util.Map;
+import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ExternalResourceException;
+import com.zaxxer.hikari.HikariDataSource;
+import org.wowtools.giscatserver.dataconnect.api.DataConnect;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 
 /**
- * 数据连接管理器
+ * 关系型数据库连接，内部有一个Hikari连接池，获取java.sql.Connection
+ *
  * @author liuyu
- * @date 2022/7/29
+ * @date 2022/8/18
  */
-public class DataConnectManager {
-    private final static Map<String, DataConnect> dataConnects = new HashMap<>();
+public class SqlDataConnect extends DataConnect<Connection> {
+    private final HikariDataSource dataSource;
 
+    public SqlDataConnect(HikariDataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
+    @Override
+    public Connection getConnection() {
+        try {
+            return dataSource.getConnection();
+        } catch (SQLException e) {
+            throw new ExternalResourceException(e);
+        }
+    }
+
+    @Override
+    public void close() {
+        dataSource.close();
+    }
 }

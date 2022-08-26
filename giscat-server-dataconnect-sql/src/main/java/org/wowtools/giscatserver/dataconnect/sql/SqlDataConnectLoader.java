@@ -17,17 +17,37 @@
  *  specific language governing permissions and limitations
  *  under the License.
  ****************************************************************/
-package org.wowtools.giscatserver.dataconnect.api;
+package org.wowtools.giscatserver.dataconnect.sql;
 
 import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
+import cn.com.enersun.mywebgis.mywebgisservice.common.util.ConfigGetter;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import org.wowtools.giscatserver.dataconnect.api.DataConnectLoader;
 
 import java.util.Map;
+import java.util.Properties;
 
 /**
- * 数据连接加载器，与DataConnect成对编写，用于将配置表中的配置信息加载为DataConnect对象
+ * SqlDataConnect加载器
  *
- * @param <T> 加载器加载的数据连接类型
+ * @author liuyu
+ * @date 2022/8/18
  */
-public abstract class DataConnectLoader<T extends DataConnect> {
-     public abstract T load(Map<String, Object> dataConnectConfig) throws ConfigException;
+public class SqlDataConnectLoader extends DataConnectLoader<SqlDataConnect> {
+
+    @Override
+    public SqlDataConnect load(Map<String, Object> dataConnectConfig) throws ConfigException {
+        Map<String, Object> cpConfig = ConfigGetter.getPropertyNotNull(dataConnectConfig, "hikari");
+        HikariDataSource dataSource;
+        try {
+            Properties properties = new Properties(cpConfig.size());
+            cpConfig.forEach((k, v) -> properties.setProperty(k, String.valueOf(v)));
+            HikariConfig configuration = new HikariConfig();
+            dataSource = new HikariDataSource(configuration);
+        } catch (Exception e) {
+            throw new ConfigException("hikari配置错误", e);
+        }
+        return new SqlDataConnect(dataSource);
+    }
 }
