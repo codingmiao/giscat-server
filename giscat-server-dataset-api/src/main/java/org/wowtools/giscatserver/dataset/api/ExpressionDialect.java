@@ -19,8 +19,6 @@
  ****************************************************************/
 package org.wowtools.giscatserver.dataset.api;
 
-import org.wowtools.giscat.vector.mbexpression.Expression;
-
 /**
  * 表达式方言。方言即数据集支持的查询语句。
  * 例如，sql语句即关系型数据库的方言。
@@ -29,9 +27,4 @@ import org.wowtools.giscat.vector.mbexpression.Expression;
  * @date 2022/7/29
  */
 public abstract class ExpressionDialect {
-    protected final Expression expression;
-
-    public ExpressionDialect(Expression expression) {
-        this.expression = expression;
-    }
 }

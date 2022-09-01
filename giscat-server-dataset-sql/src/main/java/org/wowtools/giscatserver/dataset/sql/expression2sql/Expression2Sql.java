@@ -60,8 +60,12 @@ public abstract class Expression2Sql<E extends Expression> {
         } else {
             if (o instanceof String) {
                 String str = (String) o;
-                str = str.replace("'", "''");
-                return new Part("'" + str + "'",true);
+                if ('$'==str.charAt(0)){
+                    return new Part(str,true);
+                }else {
+                    str = str.replace("'", "''");
+                    return new Part("'" + str + "'",true);
+                }
             } else {
                 return new Part(String.valueOf(o),true);
             }

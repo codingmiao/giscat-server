@@ -21,9 +21,10 @@ package org.wowtools.giscatserver.dataset.api;
 
 
 import org.wowtools.giscat.vector.mbexpression.Expression;
+import org.wowtools.giscat.vector.mbexpression.ExpressionParams;
 import org.wowtools.giscatserver.dataconnect.api.DataConnect;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * 数据集。数据集是数据连接对象中的一个存储单元，例如关系型数据库中的一张表
@@ -35,58 +36,35 @@ public abstract class DatSet<DC extends DataConnect, ED extends ExpressionDialec
 
 
     /**
-     * 是否支持方言表达式查询
-     *
-     * @return true/false
-     */
-    public abstract boolean isSupportDialect();
-
-
-    /**
      * 将表达式转为方言。如果此数据集不支持方言，则抛出UnsupportedOperationException
      *
      * @param expression 表达式
      * @return 方言
      */
-    public abstract ExpressionDialect buildExpressionDialect(Expression expression);
+    public abstract ED buildExpressionDialect(Expression<Boolean> expression);
 
     /**
      * 用方言进行条件查询。如果此数据集不支持方言，则抛出UnsupportedOperationException
      *
+     * @param propertyNames     查询的要素要返回哪些字段
      * @param expressionDialect 方言
+     * @param expressionParams  查询参数
      * @return FeatureResultSet
      */
-    public abstract FeatureResultSet queryByDialect(ExpressionDialect expressionDialect);
-
-    /**
-     * 用表达式进行条件查询。一般地，方言查询会比表达式查询性能更高，所以建议尽可能使用queryByDialect方法
-     *
-     * @param expression 表达式
-     * @return FeatureResultSet
-     */
-    public abstract FeatureResultSet queryByExpression(Expression expression);
-
+    public abstract FeatureResultSet queryByDialect(List<String> propertyNames, ED expressionDialect, ExpressionParams expressionParams);
 
     /**
      * 用方言进行最邻近查询。如果此数据集不支持方言，则抛出UnsupportedOperationException
      *
+     * @param propertyNames     查询的要素要返回哪些字段
      * @param expressionDialect 方言
+     * @param expressionParams  查询参数
      * @param x                 x
      * @param y                 y
      * @param n                 最多返回几条数据
      * @return FeatureResultSet
      */
-    public abstract FeatureResultSet nearestByDialect(ExpressionDialect expressionDialect, double x, double y, int n);
+    public abstract FeatureResultSet nearestByDialect(List<String> propertyNames, ED expressionDialect, ExpressionParams expressionParams, double x, double y, int n);
 
-    /**
-     * 用表达式进行最邻近查询。一般地，方言查询会比表达式查询性能更高，所以建议尽可能使用nearestByDialect方法
-     *
-     * @param expression 表达式
-     * @param x          x
-     * @param y          y
-     * @param n          最多返回几条数据
-     * @return FeatureResultSet
-     */
-    public abstract FeatureResultSet nearestByExpression(Expression expression, double x, double y, int n);
 
 }

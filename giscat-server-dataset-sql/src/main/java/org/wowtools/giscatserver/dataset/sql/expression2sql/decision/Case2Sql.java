@@ -43,7 +43,7 @@ public class Case2Sql extends Expression2Sql<Case> {
             sb.append(partOutput.str).append(" ");
         }
         Part partOutput = getValue(expressionArray.get(n), expression2SqlManager);
-        sb.append(" else ").append(partOutput.str).append(" end");
+        sb.append("else ").append(partOutput.str).append(" end");
         return new Part(sb.toString(), true);
     }
 

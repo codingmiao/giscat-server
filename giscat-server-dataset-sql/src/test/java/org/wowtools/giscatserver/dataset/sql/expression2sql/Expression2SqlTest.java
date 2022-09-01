@@ -43,8 +43,10 @@ public class Expression2SqlTest {
     public void test() throws Exception {
         Assert.assertEquals("f1='1' and f2=1",
                 toWherePart("[\"all\", [\"==\", [\"get\", \"f1\"], \"1\"],[\"==\", [\"get\", \"f2\"], 1]]"));
-        Assert.assertEquals("f1='1' and f2=1",
-                toWherePart("[\"==\",[\"case\",[\"==\",[\"get\",\"f1\"],\"a\"],\"1\",[\"==\",[\"get\",\"f1\"],\"b\"],\"2\",\"0\"],1]"));
+        Assert.assertEquals("f1='1' and f2=$1",
+                toWherePart("[\"all\", [\"==\", [\"get\", \"f1\"], \"1\"],[\"==\", [\"get\", \"f2\"], \"$1\"]]"));
+        Assert.assertEquals("case when f1='a' then '1' when f1='b' then '2' else '0' end=f2",
+                toWherePart("[\"==\",[\"case\",[\"==\",[\"get\",\"f1\"],\"a\"],\"1\",[\"==\",[\"get\",\"f1\"],\"b\"],\"2\",\"0\"],[\"get\", \"f2\"]]"));
     }
 
     private String toWherePart(String strExpression){
