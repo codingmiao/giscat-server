@@ -32,7 +32,7 @@ import java.util.List;
  * @param <DC> 数据集所需的数据库连接
  * @param <ED> 数据集方言(如果有)
  */
-public abstract class DatSet<DC extends DataConnect, ED extends ExpressionDialect> {
+public abstract class DataSet<DC extends DataConnect, ED extends ExpressionDialect,CTX extends DataSetCtx> {
 
 
     /**
@@ -66,5 +66,10 @@ public abstract class DatSet<DC extends DataConnect, ED extends ExpressionDialec
      */
     public abstract FeatureResultSet nearestByDialect(List<String> propertyNames, ED expressionDialect, ExpressionParams expressionParams, double x, double y, int n);
 
+    /**
+     * 构造一个查询上下文
+     * @return CTX
+     */
+    protected abstract CTX createDatSetCtx();
 
 }

@@ -14,6 +14,7 @@
         <module>giscat-server-common</module>
         <module>giscat-server-dataconnect-sql</module>
         <module>giscat-server-dataset-sql</module>
+        <module>giscat-server-dataset-postgis</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -36,6 +37,21 @@
             <dependency>
                 <groupId>org.wowtools</groupId>
                 <artifactId>giscat-server-dataconnect-api</artifactId>
+                <version>1.0.0-STABLE</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wowtools</groupId>
+                <artifactId>giscat-server-dataconnect-sql</artifactId>
+                <version>1.0.0-STABLE</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wowtools</groupId>
+                <artifactId>giscat-server-dataset-api</artifactId>
+                <version>1.0.0-STABLE</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wowtools</groupId>
+                <artifactId>giscat-server-dataset-sql</artifactId>
                 <version>1.0.0-STABLE</version>
             </dependency>
 
@@ -135,6 +151,11 @@
                 <groupId>org.reflections</groupId>
                 <artifactId>reflections</artifactId>
                 <version>0.10.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>42.5.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

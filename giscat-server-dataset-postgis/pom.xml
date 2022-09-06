@@ -9,24 +9,21 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>giscat-server-dataset-sql</artifactId>
-    <description>数据集,sql形式的数据集实现,抽象类，需根据数据库再具体实现</description>
+    <artifactId>giscat-server-dataset-postgis</artifactId>
+
+    <description>postgis数据集</description>
     <dependencies>
-        <dependency>
-            <groupId>org.wowtools</groupId>
-            <artifactId>giscat-server-dataconnect-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wowtools</groupId>
-            <artifactId>giscat-server-dataset-api</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.wowtools</groupId>
             <artifactId>giscat-server-dataconnect-sql</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wowtools</groupId>
-            <artifactId>giscat-vector-mbexpression</artifactId>
+            <artifactId>giscat-server-dataset-sql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -34,5 +31,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 </project>

@@ -26,11 +26,15 @@ import org.wowtools.giscat.vector.mbexpression.Expression;
 import org.wowtools.giscat.vector.mbexpression.ExpressionParams;
 import org.wowtools.giscat.vector.pojo.Feature;
 import org.wowtools.giscatserver.dataconnect.sql.SqlDataConnect;
-import org.wowtools.giscatserver.dataset.api.DatSet;
+import org.wowtools.giscatserver.dataset.api.DataSet;
+import org.wowtools.giscatserver.dataset.api.DataSetCtx;
 import org.wowtools.giscatserver.dataset.api.FeatureResultSet;
 import org.wowtools.giscatserver.dataset.sql.expression2sql.Expression2Sql;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +43,7 @@ import java.util.Map;
  * 关系型数据库数据集
  */
 @Slf4j
-public abstract class SqlDatSet extends DatSet<SqlDataConnect, SqlExpressionDialect> {
+public abstract class SqlDataSet<CTX extends DataSetCtx> extends DataSet<SqlDataConnect, SqlExpressionDialect, CTX> {
 
     private final SqlDataConnect dataConnect;
     private final Expression2SqlManager expression2SqlManager;
@@ -54,7 +58,7 @@ public abstract class SqlDatSet extends DatSet<SqlDataConnect, SqlExpressionDial
      * @param tableName             数据集对应表名，也可以是一个sql语句，传入sql语句时需要加括号和别名例如"(select a,b from xxx) t"
      * @param shapeName             空间数据字段名
      */
-    public SqlDatSet(SqlDataConnect dataConnect, Expression2SqlManager expression2SqlManager, String tableName, String shapeName) {
+    public SqlDataSet(SqlDataConnect dataConnect, Expression2SqlManager expression2SqlManager, String tableName, String shapeName) {
         this.dataConnect = dataConnect;
         this.expression2SqlManager = expression2SqlManager;
         this.tableName = tableName;
@@ -114,15 +118,16 @@ public abstract class SqlDatSet extends DatSet<SqlDataConnect, SqlExpressionDial
      *
      * @param rs         ResultSet
      * @param shapeIndex shape字段在第几个，和ResultSet规范一样从1开始
-     * @return
+     * @param ctx        查询上下文
+     * @return Geometry
      */
-    protected abstract Geometry readGeometry(ResultSet rs, int shapeIndex);
+    protected abstract Geometry readGeometry(ResultSet rs, int shapeIndex, CTX ctx) throws SQLException;
 
 
     /**
      * 从ResultSet中读取属性
      */
-    protected class PropertyReader {
+    private static final class PropertyReader {
         private final int index;
         private final String propertyName;
 
@@ -153,6 +158,8 @@ public abstract class SqlDatSet extends DatSet<SqlDataConnect, SqlExpressionDial
         private final PropertyReader[] propertyReaders;
 
         private boolean hasNext;
+
+        private final CTX ctx = createDatSetCtx();
 
         public SqlFeatureResultSet(String sql, PreparedStatementSetter preparedStatementSetter, List<String> propertyNames) {
             this.conn = dataConnect.getConnection();
@@ -214,13 +221,13 @@ public abstract class SqlDatSet extends DatSet<SqlDataConnect, SqlExpressionDial
         @Override
         public Feature next() {
             try {
-                hasNext = rs.next();
-                Geometry geometry = readGeometry(rs, 1);
+                Geometry geometry = readGeometry(rs, 1, ctx);
                 Map<String, Object> properties = new HashMap<>(propertyReaders.length);
                 for (PropertyReader propertyReader : propertyReaders) {
                     properties.put(propertyReader.propertyName, propertyReader.read(rs));
                 }
                 Feature feature = new Feature(geometry, properties);
+                hasNext = rs.next();
                 return feature;
             } catch (SQLException e) {
                 close();

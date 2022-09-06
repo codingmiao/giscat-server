@@ -19,15 +19,10 @@
  ****************************************************************/
 package org.wowtools.giscatserver.dataset.api;
 
-import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
-
-import java.util.Map;
-
 /**
- * 数据集加载器，与DatSet成对编写，用于将配置表中的配置信息加载为DatSet对象
- *
- * @param <T> 加载器加载的数据集类型
+ * 查询上下文，为了方便一些非线程安全对象(如WKBReader)在查询中的复用，可以把这些对象放在DatSetCtx中
+ * @author liuyu
+ * @date 2022/9/1
  */
-public abstract class DatSetLoader<T extends DatSet> {
-    public abstract T load(Map<String, Object> dataSetConfig) throws ConfigException;
+public abstract class DataSetCtx {
 }
