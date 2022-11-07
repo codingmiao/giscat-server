@@ -45,12 +45,12 @@ import java.util.Map;
 @Slf4j
 public abstract class SqlDataSet<CTX extends DataSetCtx> extends DataSet<SqlDataConnect, SqlExpressionDialect, CTX> {
 
-    private final SqlDataConnect dataConnect;
-    private final Expression2SqlManager expression2SqlManager;
+    protected final SqlDataConnect dataConnect;
+    protected final Expression2SqlManager expression2SqlManager;
 
-    private final String tableName;
+    protected final String tableName;
 
-    private final String shapeName;
+    protected final String shapeName;
 
     /**
      * @param dataConnect           数据集使用的数据连接
@@ -76,6 +76,7 @@ public abstract class SqlDataSet<CTX extends DataSetCtx> extends DataSet<SqlData
     public SqlExpressionDialect buildExpressionDialect(Expression<Boolean> expression) {
         Expression2Sql expression2Sql = expression2SqlManager.getExpression2Sql(expression);
         String wherePart = expression2Sql.convert(expression, expression2SqlManager).str;
+        wherePart = wherePart.replace(Expression2SqlManager.ShapePlaceholder, shapeName);
         SqlExpressionDialect sqlExpressionDialect = new SqlExpressionDialect(wherePart);
         return sqlExpressionDialect;
     }
@@ -89,15 +90,28 @@ public abstract class SqlDataSet<CTX extends DataSetCtx> extends DataSet<SqlData
         }
         sbSql.deleteCharAt(sbSql.length() - 1);
         sbSql.append(" from ").append(tableName);
-        sbSql.append(" where ").append(expressionDialect.getWherePart());
+        if (null != expressionDialect) {
+            String wherePart = expressionDialect.getWherePart();
+            if (wherePart != null) {
+                wherePart = wherePart.trim();
+                if (wherePart.length() > 0) {
+                    sbSql.append(" where ").append(wherePart);
+                }
+            }
+        }
         String sql = sbSql.toString();
 
-        PreparedStatementSetter preparedStatementSetter = (pstm) -> {
+        PreparedStatementSetter preparedStatementSetter = null == expressionDialect ?
+                (pstm) -> {
+                }
+                : (pstm) -> {
             int idx = 1;
             for (String paramName : expressionDialect.getParamNames()) {
                 Object obj = expressionParams.getValue(paramName);
                 if (ExpressionParams.empty == obj) {
                     obj = null;
+                } else if (obj instanceof Geometry) {
+                    obj = geometry2sqlText((Geometry) obj);
                 }
                 pstm.setObject(idx, obj);
                 idx++;
@@ -107,6 +121,14 @@ public abstract class SqlDataSet<CTX extends DataSetCtx> extends DataSet<SqlData
         SqlFeatureResultSet sqlFeatureResultSet = new SqlFeatureResultSet(sql, preparedStatementSetter, propertyNames);
         return sqlFeatureResultSet;
     }
+
+    /**
+     * geometry查询条件要转成什么字符串才能被数据库识别，如pg中需转换为形如point(100 20)的wkt字符串
+     *
+     * @param geometry geometry
+     * @return string
+     */
+    protected abstract String geometry2sqlText(Geometry geometry);
 
 
     @Override

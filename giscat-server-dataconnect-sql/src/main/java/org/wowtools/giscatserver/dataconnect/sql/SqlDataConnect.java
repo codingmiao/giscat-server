@@ -23,6 +23,7 @@ import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ExternalResource
 import com.zaxxer.hikari.HikariDataSource;
 import org.wowtools.giscatserver.dataconnect.api.DataConnect;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -33,9 +34,9 @@ import java.sql.SQLException;
  * @date 2022/8/18
  */
 public class SqlDataConnect extends DataConnect<Connection> {
-    private final HikariDataSource dataSource;
+    private final DataSource dataSource;
 
-    public SqlDataConnect(HikariDataSource dataSource) {
+    public SqlDataConnect(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
@@ -50,6 +51,13 @@ public class SqlDataConnect extends DataConnect<Connection> {
 
     @Override
     public void close() {
-        dataSource.close();
+        if (dataSource instanceof AutoCloseable) {
+            AutoCloseable ac = (AutoCloseable) dataSource;
+            try {
+                ac.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }

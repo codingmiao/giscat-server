@@ -13,18 +13,9 @@ import java.util.List;
 public class Expression2SqlTest {
 
     private static final Expression2SqlManager expression2SqlManager = new Expression2SqlManager() {
-        @Override
-        protected Expression2Sql<BboxIntersection> getBboxIntersection() {
-            return null;
-        }
 
         @Override
         protected Expression2Sql<BboxIntersects> getBboxIntersects() {
-            return null;
-        }
-
-        @Override
-        protected Expression2Sql<GeoIntersection> getGeoIntersection() {
             return null;
         }
 

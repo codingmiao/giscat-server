@@ -43,6 +43,11 @@ import java.util.Set;
  */
 public abstract class Expression2SqlManager {
 
+    /**
+     * shape字段占位符
+     */
+    public static final String ShapePlaceholder = "[shape]";
+
     private static void putImplByClass(Expression2Sql impl, Map<Class<? extends Expression>, Expression2Sql> impls) {
         if (null == impl) {
             return;
@@ -91,9 +96,7 @@ public abstract class Expression2SqlManager {
         Map<Class<? extends Expression>, Expression2Sql> _impls = new HashMap<>();
         _impls.putAll(commonImpls);
 
-        putImplByClass(getBboxIntersection(), _impls);
         putImplByClass(getBboxIntersects(), _impls);
-        putImplByClass(getGeoIntersection(), _impls);
         putImplByClass(getGeoIntersects(), _impls);
 
         List<Expression2Sql> extendImpls = getExtends();
@@ -115,25 +118,11 @@ public abstract class Expression2SqlManager {
     }
 
     /**
-     * 返回数据库具体的“BboxIntersection”空间查询实现
-     *
-     * @return BboxIntersection
-     */
-    protected abstract Expression2Sql<BboxIntersection> getBboxIntersection();
-
-    /**
      * 返回数据库具体的“BboxIntersects”空间查询实现
      *
      * @return BboxIntersects
      */
     protected abstract Expression2Sql<BboxIntersects> getBboxIntersects();
-
-    /**
-     * 返回数据库具体的“GeoIntersection”空间查询实现
-     *
-     * @return GeoIntersection
-     */
-    protected abstract Expression2Sql<GeoIntersection> getGeoIntersection();
 
     /**
      * 返回数据库具体的“GeoIntersects”空间查询实现

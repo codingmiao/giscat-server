@@ -3,6 +3,8 @@ package org.wowtools.giscatserver.dataset.postgis;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
+import org.locationtech.jts.io.WKTWriter;
+import org.locationtech.jts.util.StringUtil;
 import org.postgresql.util.PGobject;
 import org.wowtools.giscat.vector.mbexpression.ExpressionParams;
 import org.wowtools.giscatserver.dataconnect.sql.SqlDataConnect;
@@ -32,9 +34,65 @@ public class PostgisSqlDataSet extends SqlDataSet<PostgisDataSetCtx> {
         super(dataConnect, expression2SqlManager, tableName, shapeName);
     }
 
+    private static final WKTWriter wKTWriter = new WKTWriter();
+
+    @Override
+    protected String geometry2sqlText(Geometry geometry) {
+        return wKTWriter.write(geometry);
+    }
+
     @Override
     public FeatureResultSet nearestByDialect(List<String> propertyNames, SqlExpressionDialect expressionDialect, ExpressionParams expressionParams, double x, double y, int n) {
-        return null;
+        //#最邻近查询
+        //select t.*,st_astext(geom) from testline t
+        //ORDER BY
+        //geom <-> st_geomfromtext('point(100 20)',4326)
+        //LIMIT 10;
+        String wkt = new StringBuilder("point(").append(x).append(' ').append(y).append(')').toString();
+        StringBuilder sbSql = new StringBuilder("select t.* from(select ");
+        sbSql.append(shapeName).append(",");
+        for (String propertyName : propertyNames) {
+            sbSql.append(propertyName).append(',');
+        }
+        sbSql.deleteCharAt(sbSql.length() - 1);
+        sbSql.append(" from ").append(tableName);
+        if (null != expressionDialect) {
+            String wherePart = expressionDialect.getWherePart();
+            if (wherePart != null) {
+                wherePart = wherePart.trim();
+                if (wherePart.length() > 0) {
+                    sbSql.append(" where ").append(wherePart);
+                }
+            }
+        }
+        sbSql.append(") t ORDER BY ").append(shapeName);
+        sbSql.append(" <-> st_geomfromtext(?,4326) LIMIT ?");
+        String sql = sbSql.toString();
+
+        PreparedStatementSetter preparedStatementSetter = null == expressionDialect ?
+                (pstm) -> {
+                    pstm.setObject(1, wkt);
+                    pstm.setInt(2, n);
+                }
+                : (pstm) -> {
+            int idx = 1;
+            for (String paramName : expressionDialect.getParamNames()) {
+                Object obj = expressionParams.getValue(paramName);
+                if (ExpressionParams.empty == obj) {
+                    obj = null;
+                } else if (obj instanceof Geometry) {
+                    obj = geometry2sqlText((Geometry) obj);
+                }
+                pstm.setObject(idx, obj);
+                idx++;
+            }
+            pstm.setObject(idx, wkt);
+            pstm.setInt(idx + 1, n);
+        };
+
+        SqlFeatureResultSet sqlFeatureResultSet = new SqlFeatureResultSet(sql, preparedStatementSetter, propertyNames);
+
+        return sqlFeatureResultSet;
     }
 
     @Override

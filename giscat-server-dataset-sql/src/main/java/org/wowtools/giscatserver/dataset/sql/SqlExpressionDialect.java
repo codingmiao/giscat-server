@@ -70,13 +70,13 @@ public class SqlExpressionDialect extends ExpressionDialect {
                 continue;
             }
             if (in$) {
-                if (c == ' ' || c == '\t') {
+                if (c == ' ' || c == '\t' || c == ',' || c == ')') {
                     in$ = false;
                     //找一个$参数结束，保存结果
                     String name = paramName.toString();
                     paramNameList.add(name);
-                    newWherePart.delete(newWherePart.length() - name.length()-1, newWherePart.length());
-                    newWherePart.append("? ");
+                    newWherePart.delete(newWherePart.length() - name.length() - 1, newWherePart.length());
+                    newWherePart.append("?").append(c);
                     paramName = null;
                 } else {
                     paramName.append(c);
