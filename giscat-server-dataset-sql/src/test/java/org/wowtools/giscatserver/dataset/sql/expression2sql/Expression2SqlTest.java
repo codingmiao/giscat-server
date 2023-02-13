@@ -32,12 +32,37 @@ public class Expression2SqlTest {
 
     @org.junit.Test
     public void test() throws Exception {
-        Assert.assertEquals("f1='1' and f2=1",
-                toWherePart("[\"all\", [\"==\", [\"get\", \"f1\"], \"1\"],[\"==\", [\"get\", \"f2\"], 1]]"));
+        //绑参数测试
         Assert.assertEquals("f1='1' and f2=$1",
                 toWherePart("[\"all\", [\"==\", [\"get\", \"f1\"], \"1\"],[\"==\", [\"get\", \"f2\"], \"$1\"]]"));
+        //all
+        Assert.assertEquals("f1='1' and f2=1",
+                toWherePart("[\"all\", [\"==\", [\"get\", \"f1\"], \"1\"],[\"==\", [\"get\", \"f2\"], 1]]"));
+        //all
+        Assert.assertEquals("f1='1' or f2=1",
+                toWherePart("[\"any\", [\"==\", [\"get\", \"f1\"], \"1\"],[\"==\", [\"get\", \"f2\"], 1]]"));
+        //case
         Assert.assertEquals("case when f1='a' then '1' when f1='b' then '2' else '0' end=f2",
                 toWherePart("[\"==\",[\"case\",[\"==\",[\"get\",\"f1\"],\"a\"],\"1\",[\"==\",[\"get\",\"f1\"],\"b\"],\"2\",\"0\"],[\"get\", \"f2\"]]"));
+        //Compare
+        Assert.assertEquals("f1<'1'",
+                toWherePart("[\"<\", [\"get\", \"f1\"], \"1\"]"));
+        Assert.assertEquals("f1<='1'",
+                toWherePart("[\"<=\", [\"get\", \"f1\"], \"1\"]"));
+        Assert.assertEquals("f1='1'",
+                toWherePart("[\"==\", [\"get\", \"f1\"], \"1\"]"));
+        Assert.assertEquals("f1>='1'",
+                toWherePart("[\">=\", [\"get\", \"f1\"], \"1\"]"));
+        Assert.assertEquals("f1>'1'",
+                toWherePart("[\">\", [\"get\", \"f1\"], \"1\"]"));
+        Assert.assertEquals("f1<>'1'",
+                toWherePart("[\"!=\", [\"get\", \"f1\"], \"1\"]"));
+        //match
+        Assert.assertEquals("case when '1'=f1 then 1 when '2'=f1 then 2 else 0 end",
+                toWherePart("[\"match\",[\"get\", \"f1\"],\"1\",1,\"2\",2,0]"));
+        //!
+        Assert.assertEquals("f1 is null",
+                toWherePart("[\"!\", [\"get\", \"f1\"]]"));
     }
 
     private String toWherePart(String strExpression){

@@ -28,6 +28,7 @@ import org.wowtools.giscat.vector.mbexpression.spatial.GeoIntersects;
 import org.wowtools.giscatserver.dataset.sql.expression2sql.Expression2Sql;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -73,6 +74,10 @@ public abstract class Expression2SqlManager {
         Set<Class<? extends Expression2Sql>> classList = reflections.getSubTypesOf(Expression2Sql.class);
         Map<Class<? extends Expression>, Expression2Sql> impls = new HashMap<>();
         for (Class<? extends Expression2Sql> aClass : classList) {
+            if (Modifier.isAbstract(aClass.getModifiers())) {
+                //抽象类不做初始化
+                continue;
+            }
             try {
                 Constructor<? extends Expression2Sql> implConstructor = aClass.getDeclaredConstructor();
                 implConstructor.setAccessible(true);
@@ -80,6 +85,8 @@ public abstract class Expression2SqlManager {
 
                 putImplByClass(impl, impls);
             } catch (Exception e) {
+                throw new RuntimeException("Expression2Sql:" + aClass, e);
+            } catch (Error e) {
                 throw new RuntimeException("Expression2Sql:" + aClass, e);
             }
         }

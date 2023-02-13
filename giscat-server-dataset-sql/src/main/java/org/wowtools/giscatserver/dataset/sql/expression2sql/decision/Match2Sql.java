@@ -38,10 +38,10 @@ public class Match2Sql extends Expression2Sql<Match> {
 
         StringBuilder sb = new StringBuilder("case ");
         int n = expressionArray.size() - 1;
-        for (int i = 1; i < n; i += 2) {
+        for (int i = 2; i < n; i += 2) {
             Part label = getValue(expressionArray.get(i), expression2SqlManager);
             Part output = getValue(expressionArray.get(i + 1), expression2SqlManager);
-            sb.append("when ").append(label).append('=').append(input.str).append(" then ");
+            sb.append("when ").append(label.str).append('=').append(input.str).append(" then ");
             sb.append(output.str).append(" ");
         }
         Part output = getValue(expressionArray.get(n), expression2SqlManager);
