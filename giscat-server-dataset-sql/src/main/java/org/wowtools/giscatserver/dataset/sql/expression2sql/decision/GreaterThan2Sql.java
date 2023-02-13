@@ -19,16 +19,15 @@
  ****************************************************************/
 package org.wowtools.giscatserver.dataset.sql.expression2sql.decision;
 
-import org.wowtools.giscat.vector.mbexpression.decision.Equal;
+import org.wowtools.giscat.vector.mbexpression.decision.GreaterThan;
 
 /**
  * @author liuyu
- * @date 2022/8/26
+ * @date 2023/2/13
  */
-public class Equal2Sql extends Compare2Sql<Equal> {
-
+public class GreaterThan2Sql extends Compare2Sql<GreaterThan> {
     @Override
     protected String getSymbol() {
-        return "=";
+        return ">";
     }
 }

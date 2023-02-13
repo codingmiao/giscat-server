@@ -19,16 +19,27 @@
  ****************************************************************/
 package org.wowtools.giscatserver.dataset.sql.expression2sql.decision;
 
-import org.wowtools.giscat.vector.mbexpression.decision.Equal;
+import org.wowtools.giscat.vector.mbexpression.decision.Negation;
+import org.wowtools.giscatserver.dataset.sql.Expression2SqlManager;
+import org.wowtools.giscatserver.dataset.sql.expression2sql.Expression2Sql;
+
+import java.util.ArrayList;
 
 /**
  * @author liuyu
- * @date 2022/8/26
+ * @date 2023/2/13
  */
-public class Equal2Sql extends Compare2Sql<Equal> {
-
+public class Negation2Sql extends Expression2Sql<Negation> {
     @Override
-    protected String getSymbol() {
-        return "=";
+    public Part convert(Negation expression, Expression2SqlManager expression2SqlManager) {
+        ArrayList expressionArray = expression.getExpressionArray();
+        Part p1 = getValue(expressionArray.get(1), expression2SqlManager);
+        StringBuilder sb = new StringBuilder();
+        if (p1.single) {
+            sb.append(p1.str).append(" is null");
+        } else {
+            sb.append('(').append(p1.str).append(") is null");
+        }
+        return new Part(sb.toString(), true);
     }
 }
