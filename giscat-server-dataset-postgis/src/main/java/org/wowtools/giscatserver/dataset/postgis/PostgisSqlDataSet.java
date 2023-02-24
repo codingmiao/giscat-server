@@ -4,7 +4,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
 import org.locationtech.jts.io.WKTWriter;
-import org.locationtech.jts.util.StringUtil;
 import org.postgresql.util.PGobject;
 import org.wowtools.giscat.vector.mbexpression.ExpressionParams;
 import org.wowtools.giscatserver.dataconnect.sql.SqlDataConnect;
@@ -37,7 +36,7 @@ public class PostgisSqlDataSet extends SqlDataSet<PostgisDataSetCtx> {
     private static final WKTWriter wKTWriter = new WKTWriter();
 
     @Override
-    protected String geometry2sqlText(Geometry geometry) {
+    protected String geometry2sqlObject(Geometry geometry) {
         return wKTWriter.write(geometry);
     }
 
@@ -81,7 +80,7 @@ public class PostgisSqlDataSet extends SqlDataSet<PostgisDataSetCtx> {
                 if (ExpressionParams.empty == obj) {
                     obj = null;
                 } else if (obj instanceof Geometry) {
-                    obj = geometry2sqlText((Geometry) obj);
+                    obj = geometry2sqlObject((Geometry) obj);
                 }
                 pstm.setObject(idx, obj);
                 idx++;

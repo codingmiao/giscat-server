@@ -111,7 +111,7 @@ public abstract class SqlDataSet<CTX extends DataSetCtx> extends DataSet<SqlData
                 if (ExpressionParams.empty == obj) {
                     obj = null;
                 } else if (obj instanceof Geometry) {
-                    obj = geometry2sqlText((Geometry) obj);
+                    obj = geometry2sqlObject((Geometry) obj);
                 }
                 pstm.setObject(idx, obj);
                 idx++;
@@ -123,12 +123,12 @@ public abstract class SqlDataSet<CTX extends DataSetCtx> extends DataSet<SqlData
     }
 
     /**
-     * geometry查询条件要转成什么字符串才能被数据库识别，如pg中需转换为形如point(100 20)的wkt字符串
+     * geometry查询条件要转成什么对象才能被数据库识别，如pg中需转换为形如point(100 20)的wkt字符串
      *
      * @param geometry geometry
-     * @return string
+     * @return sql Object
      */
-    protected abstract String geometry2sqlText(Geometry geometry);
+    protected abstract Object geometry2sqlObject(Geometry geometry);
 
 
     @Override
