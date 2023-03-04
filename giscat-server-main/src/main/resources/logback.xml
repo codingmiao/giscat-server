@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2022- "giscat (https://github.com/codingmiao/giscat)"
+  ~
+  ~ 本项目采用自定义版权协议，在不同行业使用时有不同约束，详情参阅：
+  ~
+  ~ https://github.com/codingmiao/giscat/blob/main/LICENSE
+  -->
+
+<configuration debug="true" scan="true">
+
+    <!-- 输出到控制台 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%c %d{yyyy-MM-dd HH:mm:ss} [%level] - %m%n</pattern>
+        </encoder>
+    </appender>
+
+
+    <!-- 按日期滚动日志 -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 日志存放位置 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- 保存几天历史 -->
+            <maxHistory>10</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%c %d{yyyy-MM-dd HH:mm:ss} [%level] - %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <!--    &lt;!&ndash; 记录special操作日志 &ndash;&gt;-->
+    <!--    <logger name="cn.com.enersun" level="INFO">-->
+    <!--        <appender-ref ref="STDOUT"/>-->
+    <!--        <appender-ref ref="FILE"/>-->
+    <!--    </logger>-->
+
+    <!-- 配置好前面对应的appender -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>

@@ -9,18 +9,18 @@
 package cn.com.enersun.mywebgis.mywebgisservice.common.exception;
 
 /**
- * 配置信息错误引起的异常
+ * 其它异常
  *
  * @author liuyu
  * @date 2023/3/3
  */
-public class ConfigException extends RuntimeException {
+public class OtherException extends RuntimeException {
 
-    public ConfigException(String message) {
+    public OtherException(String message) {
         super(message);
     }
 
-    public ConfigException(String message, Throwable cause) {
+    public OtherException(String message, Throwable cause) {
         super(message, cause);
     }
 }

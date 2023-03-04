@@ -1,24 +1,13 @@
-/*****************************************************************
- *  Copyright (c) 2022- "giscat by 刘雨 (https://github.com/codingmiao/giscat)"
- *  Licensed to the Apache Software Foundation (ASF) under one
- *  or more contributor license agreements.  See the NOTICE file
- *  distributed with this work for additional information
- *  regarding copyright ownership.  The ASF licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License.  You may obtain a copy of the License at
+/*
+ * Copyright (c) 2022- "giscat (https://github.com/codingmiao/giscat)"
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * 本项目采用自定义版权协议，在不同行业使用时有不同约束，详情参阅：
  *
- *  Unless required by applicable law or agreed to in writing,
- *  software distributed under the License is distributed on an
- *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  KIND, either express or implied.  See the License for the
- *  specific language governing permissions and limitations
- *  under the License.
- ****************************************************************/
+ * https://github.com/codingmiao/giscat/blob/main/LICENSE
+ */
 package org.wowtools.giscatserver.dataconnect.api;
 
+import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
 import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ExternalResourceException;
 
 /**
@@ -26,11 +15,12 @@ import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ExternalResource
  *
  * @param <T> 数据连接具体对象，例如关系型数据库的java.sql.Connection对象
  */
-public abstract class DataConnect<T> {
+public abstract class DataConnect<T extends AutoCloseable> {
 
 
     /**
      * 获取实际的连接对象
+     *
      * @return 实际的连接对象
      * @throws ExternalResourceException 当连接异常时抛出
      */
@@ -42,4 +32,16 @@ public abstract class DataConnect<T> {
      * @throws Exception 关闭时抛出的任何可能的异常
      */
     public abstract void close() throws Exception;
+
+    /**
+     * 测试此数据连接是否可用
+     */
+    public void test() throws ConfigException {
+        try {
+            T conn = getConnection();
+            conn.close();
+        } catch (Exception e) {
+            throw new ConfigException("test error", e);
+        }
+    }
 }

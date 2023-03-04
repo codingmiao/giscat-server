@@ -2,9 +2,7 @@ package org.wowtools.giscatserver.dataset.sql.expression2sql;
 
 import org.junit.Assert;
 import org.wowtools.giscat.vector.mbexpression.Expression;
-import org.wowtools.giscat.vector.mbexpression.spatial.BboxIntersection;
 import org.wowtools.giscat.vector.mbexpression.spatial.BboxIntersects;
-import org.wowtools.giscat.vector.mbexpression.spatial.GeoIntersection;
 import org.wowtools.giscat.vector.mbexpression.spatial.GeoIntersects;
 import org.wowtools.giscatserver.dataset.sql.Expression2SqlManager;
 
@@ -65,7 +63,7 @@ public class Expression2SqlTest {
                 toWherePart("[\"!\", [\"get\", \"f1\"]]"));
     }
 
-    private String toWherePart(String strExpression){
+    private String toWherePart(String strExpression) {
         Expression expression = Expression.newInstance(strExpression);
 
         Expression2Sql expression2Sql = expression2SqlManager.getExpression2Sql(expression);

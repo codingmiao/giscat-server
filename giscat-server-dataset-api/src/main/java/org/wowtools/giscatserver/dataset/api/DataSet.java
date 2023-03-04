@@ -1,22 +1,10 @@
-/*****************************************************************
- *  Copyright (c) 2022- "giscat by 刘雨 (https://github.com/codingmiao/giscat)"
- *  Licensed to the Apache Software Foundation (ASF) under one
- *  or more contributor license agreements.  See the NOTICE file
- *  distributed with this work for additional information
- *  regarding copyright ownership.  The ASF licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License.  You may obtain a copy of the License at
+/*
+ * Copyright (c) 2022- "giscat (https://github.com/codingmiao/giscat)"
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * 本项目采用自定义版权协议，在不同行业使用时有不同约束，详情参阅：
  *
- *  Unless required by applicable law or agreed to in writing,
- *  software distributed under the License is distributed on an
- *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  KIND, either express or implied.  See the License for the
- *  specific language governing permissions and limitations
- *  under the License.
- ****************************************************************/
+ * https://github.com/codingmiao/giscat/blob/main/LICENSE
+ */
 package org.wowtools.giscatserver.dataset.api;
 
 
@@ -32,7 +20,7 @@ import java.util.List;
  * @param <DC> 数据集所需的数据库连接
  * @param <ED> 数据集方言(如果有)
  */
-public abstract class DataSet<DC extends DataConnect, ED extends ExpressionDialect,CTX extends DataSetCtx> {
+public abstract class DataSet<DC extends DataConnect, ED extends ExpressionDialect, CTX extends DataSetCtx> {
 
 
     /**
@@ -68,6 +56,7 @@ public abstract class DataSet<DC extends DataConnect, ED extends ExpressionDiale
 
     /**
      * 构造一个查询上下文
+     *
      * @return CTX
      */
     protected abstract CTX createDatSetCtx();

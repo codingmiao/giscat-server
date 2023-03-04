@@ -4,14 +4,12 @@ package org.wowtools.giscatserver.dataset.postgis;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.Assert;
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.io.WKTWriter;
-import org.wowtools.giscat.util.analyse.Bbox;
 import org.wowtools.giscat.vector.mbexpression.Expression;
 import org.wowtools.giscat.vector.mbexpression.ExpressionParams;
 import org.wowtools.giscat.vector.pojo.Feature;
+import org.wowtools.giscat.vector.util.analyse.Bbox;
 import org.wowtools.giscatserver.dataconnect.sql.SqlDataConnect;
 import org.wowtools.giscatserver.dataset.api.FeatureResultSet;
 import org.wowtools.giscatserver.dataset.sql.SqlExpressionDialect;
@@ -52,7 +50,7 @@ insert into testline (name, geom) values('name2', st_geomfromtext('srid=4326;lin
 
 
     @org.junit.Test
-    public void queryByDialectTest() throws Exception{
+    public void queryByDialectTest() throws Exception {
 
         {
             // null
@@ -150,7 +148,7 @@ insert into testline (name, geom) values('name2', st_geomfromtext('srid=4326;lin
     }
 
     @org.junit.Test
-    public void nearestByDialectTest() throws Exception{
+    public void nearestByDialectTest() throws Exception {
         {
             // null
             FeatureResultSet rs = dataSet.nearestByDialect(List.of("name"), null, null, 111, 21, 1);

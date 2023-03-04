@@ -1,0 +1,3 @@
+{
+  "SqlDataConnectLoader": "org.wowtools.giscatserver.dataconnect.sql.SqlDataConnectLoader"
+}

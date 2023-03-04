@@ -11,5 +11,27 @@
 
     <artifactId>giscat-server-main</artifactId>
     <description>主模块</description>
+    <dependencies>
+        <dependency>
+            <groupId>org.wowtools</groupId>
+            <artifactId>giscat-server-dataset-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wowtools</groupId>
+            <artifactId>giscat-server-dataset-postgis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wowtools</groupId>
+            <artifactId>catframe-dao</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

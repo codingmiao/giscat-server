@@ -5,7 +5,7 @@ import org.junit.Assert;
 
 public class SqlExpressionDialectTest {
     @org.junit.Test
-    public void test(){
+    public void test() {
         Assert.assertEquals("a =?\t paramNames: {$x}, ",
                 parse("a =$x"));
 
@@ -23,7 +23,7 @@ public class SqlExpressionDialectTest {
 
     }
 
-    private String parse(String wherePart){
+    private String parse(String wherePart) {
         SqlExpressionDialect sqlExpressionDialect = new SqlExpressionDialect(wherePart);
         return sqlExpressionDialect.toString();
     }

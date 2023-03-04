@@ -1,0 +1,9 @@
+{
+  "dataSourceName": "giscat_config",
+  "user": "postgres",
+  "password": "sde",
+  "jdbcUrl": "jdbc:postgresql://localhost:5432/giscat_config",
+  "driverClass": "org.postgresql.Driver",
+  "minPoolSize": 1,
+  "maxPoolSize": 20
+}

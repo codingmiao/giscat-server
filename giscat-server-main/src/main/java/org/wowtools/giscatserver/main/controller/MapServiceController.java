@@ -5,13 +5,12 @@
  *
  * https://github.com/codingmiao/giscat/blob/main/LICENSE
  */
-package org.wowtools.giscatserver.dataset.api;
+
+package org.wowtools.giscatserver.main.controller;
 
 /**
- * 查询上下文，为了方便一些非线程安全对象(如WKBReader)在查询中的复用，可以把这些对象放在DatSetCtx中
- *
  * @author liuyu
- * @date 2022/9/1
+ * @date 2023/3/4
  */
-public abstract class DataSetCtx {
+public class MapServiceController {
 }
