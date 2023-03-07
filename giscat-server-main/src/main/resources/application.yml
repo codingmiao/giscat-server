@@ -1,0 +1,10 @@
+server:
+  tomcat:
+    uri-encoding: UTF-8
+  port: 12331
+  servlet:
+    context-path: /${spring.application.name}
+
+spring:
+  application:
+    name: giscat-server

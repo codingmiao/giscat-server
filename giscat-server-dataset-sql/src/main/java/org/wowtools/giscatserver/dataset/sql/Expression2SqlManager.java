@@ -70,9 +70,7 @@ public abstract class Expression2SqlManager {
                 Expression2Sql impl = implConstructor.newInstance();
 
                 putImplByClass(impl, impls);
-            } catch (Exception e) {
-                throw new RuntimeException("Expression2Sql:" + aClass, e);
-            } catch (Error e) {
+            } catch (Exception | Error e) {
                 throw new RuntimeException("Expression2Sql:" + aClass, e);
             }
         }
@@ -86,8 +84,7 @@ public abstract class Expression2SqlManager {
     private final Map<Class<? extends Expression>, Expression2Sql> impls;
 
     {
-        Map<Class<? extends Expression>, Expression2Sql> _impls = new HashMap<>();
-        _impls.putAll(commonImpls);
+        Map<Class<? extends Expression>, Expression2Sql> _impls = new HashMap<>(commonImpls);
 
         putImplByClass(getBboxIntersects(), _impls);
         putImplByClass(getGeoIntersects(), _impls);

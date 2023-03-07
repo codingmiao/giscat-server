@@ -8,7 +8,6 @@
 package org.wowtools.giscatserver.main.service;
 
 import org.wowtools.giscat.vector.mbexpression.Expression;
-import org.wowtools.giscat.vector.mbexpression.ExpressionParams;
 import org.wowtools.giscat.vector.pojo.Feature;
 import org.wowtools.giscat.vector.pojo.FeatureCollection;
 import org.wowtools.giscatserver.main.structure.Layer;
@@ -34,9 +33,9 @@ public class MapService {
     }
 
     private static abstract class FeatureCollectionBuilder {
-        protected abstract List<Feature> get(LayerDataRule rule, List<String> propertyNames, Expression<Boolean> layerExpression, ExpressionParams expressionParams);
+        protected abstract List<Feature> get(LayerDataRule rule, List<String> propertyNames, Expression<Boolean> layerExpression, java.util.Map<String, Object> expressionParams);
 
-        FeatureCollection build(org.wowtools.giscatserver.main.structure.Map map, List<String> propertyNames, String strExpression, ExpressionParams expressionParams, byte zoom) {
+        FeatureCollection build(org.wowtools.giscatserver.main.structure.Map map, List<String> propertyNames, String strExpression, java.util.Map<String, Object> expressionParams, byte zoom) {
             org.wowtools.giscatserver.main.structure.Map.MapLayer[] mapLayers = map.getMapLayers();
             ArrayList expression = DataSetUtil.toJsonArray(strExpression);
             ArrayList<String> layerNames = new ArrayList<>(mapLayers.length);
@@ -70,7 +69,7 @@ public class MapService {
 
     private static final class QueryFeatureCollectionBuilder extends FeatureCollectionBuilder {
         @Override
-        protected List<Feature> get(LayerDataRule rule, List<String> propertyNames, Expression<Boolean> layerExpression, ExpressionParams expressionParams) {
+        protected List<Feature> get(LayerDataRule rule, List<String> propertyNames, Expression<Boolean> layerExpression, java.util.Map<String, Object> expressionParams) {
             return DataSetUtil.queryListByExpression(rule.getDataSet(), propertyNames, layerExpression, expressionParams);
         }
     }
@@ -87,7 +86,7 @@ public class MapService {
         }
 
         @Override
-        protected List<Feature> get(LayerDataRule rule, List<String> propertyNames, Expression<Boolean> layerExpression, ExpressionParams expressionParams) {
+        protected List<Feature> get(LayerDataRule rule, List<String> propertyNames, Expression<Boolean> layerExpression, java.util.Map<String, Object> expressionParams) {
             return DataSetUtil.nearest(rule.getDataSet(), propertyNames, layerExpression, expressionParams, x, y, n);
         }
     }
@@ -102,7 +101,7 @@ public class MapService {
      * @return FeatureCollection features为查询结果，headers中layers属性描述了范围。
      * 如 {layerNames:['a','b'],featureIndexes:[5,13]} 表示图层a的结果为第0-5个要素，图层b的结果为第6-13个要素
      */
-    public FeatureCollection query(List<String> propertyNames, String strExpression, ExpressionParams expressionParams, byte zoom) {
+    public FeatureCollection query(List<String> propertyNames, String strExpression, java.util.Map<String, Object> expressionParams, byte zoom) {
         return new QueryFeatureCollectionBuilder().build(map, propertyNames, strExpression, expressionParams, zoom);
     }
 
@@ -119,7 +118,7 @@ public class MapService {
      * @return FeatureCollection features为查询结果，headers中layers属性描述了范围。
      * 如 {layerNames:['a','b'],featureIndexes:[5,13]} 表示图层a的结果为第0-5个要素，图层b的结果为第6-13个要素
      */
-    public FeatureCollection nearest(List<String> propertyNames, String strExpression, ExpressionParams expressionParams, double x, double y, int n, byte zoom) {
+    public FeatureCollection nearest(List<String> propertyNames, String strExpression, java.util.Map<String, Object> expressionParams, double x, double y, int n, byte zoom) {
         return new NearestFeatureCollectionBuilder(x, y, n).build(map, propertyNames, strExpression, expressionParams, zoom);
     }
 }

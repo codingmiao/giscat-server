@@ -1,22 +1,10 @@
-/*****************************************************************
- *  Copyright (c) 2022- "giscat by 刘雨 (https://github.com/codingmiao/giscat)"
- *  Licensed to the Apache Software Foundation (ASF) under one
- *  or more contributor license agreements.  See the NOTICE file
- *  distributed with this work for additional information
- *  regarding copyright ownership.  The ASF licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License.  You may obtain a copy of the License at
+/*
+ * Copyright (c) 2022- "giscat (https://github.com/codingmiao/giscat)"
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * 本项目采用自定义版权协议，在不同行业使用时有不同约束，详情参阅：
  *
- *  Unless required by applicable law or agreed to in writing,
- *  software distributed under the License is distributed on an
- *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  KIND, either express or implied.  See the License for the
- *  specific language governing permissions and limitations
- *  under the License.
- ****************************************************************/
+ * https://github.com/codingmiao/giscat/blob/main/LICENSE
+ */
 package org.wowtools.giscatserver.dataset.sql;
 
 
@@ -53,18 +41,24 @@ public abstract class SqlDataSet<CTX extends DataSetCtx> extends DataSet<SqlData
     protected final String shapeName;
 
     /**
+     * @param id                    id
      * @param dataConnect           数据集使用的数据连接
      * @param expression2SqlManager 转换sql的管理器
      * @param tableName             数据集对应表名，也可以是一个sql语句，传入sql语句时需要加括号和别名例如"(select a,b from xxx) t"
      * @param shapeName             空间数据字段名
      */
-    public SqlDataSet(SqlDataConnect dataConnect, Expression2SqlManager expression2SqlManager, String tableName, String shapeName) {
+    public SqlDataSet(String id, SqlDataConnect dataConnect, Expression2SqlManager expression2SqlManager, String tableName, String shapeName) {
+        super(id);
         this.dataConnect = dataConnect;
         this.expression2SqlManager = expression2SqlManager;
         this.tableName = tableName;
         this.shapeName = shapeName;
     }
 
+    @Override
+    public void close() {
+        //数据库表没有什么需要关闭的
+    }
 
     /**
      * 将表达式转为sql方言
@@ -74,9 +68,15 @@ public abstract class SqlDataSet<CTX extends DataSetCtx> extends DataSet<SqlData
      */
     @Override
     public SqlExpressionDialect buildExpressionDialect(Expression<Boolean> expression) {
-        Expression2Sql expression2Sql = expression2SqlManager.getExpression2Sql(expression);
-        String wherePart = expression2Sql.convert(expression, expression2SqlManager).str;
-        wherePart = wherePart.replace(Expression2SqlManager.ShapePlaceholder, shapeName);
+        String wherePart;
+        if (null != expression) {
+            Expression2Sql expression2Sql = expression2SqlManager.getExpression2Sql(expression);
+            wherePart = expression2Sql.convert(expression, expression2SqlManager).str;
+            wherePart = wherePart.replace(Expression2SqlManager.ShapePlaceholder, shapeName);
+        } else {
+            wherePart = null;
+        }
+
         SqlExpressionDialect sqlExpressionDialect = new SqlExpressionDialect(wherePart);
         return sqlExpressionDialect;
     }
@@ -84,11 +84,15 @@ public abstract class SqlDataSet<CTX extends DataSetCtx> extends DataSet<SqlData
     @Override
     public FeatureResultSet queryByDialect(List<String> propertyNames, SqlExpressionDialect expressionDialect, ExpressionParams expressionParams) {
         StringBuilder sbSql = new StringBuilder("select ");
-        sbSql.append(shapeName).append(",");
-        for (String propertyName : propertyNames) {
-            sbSql.append(propertyName).append(',');
+        sbSql.append(shapeName);
+        if (null != propertyNames) {
+            sbSql.append(",");
+            for (String propertyName : propertyNames) {
+                sbSql.append(propertyName).append(',');
+            }
+            sbSql.deleteCharAt(sbSql.length() - 1);
         }
-        sbSql.deleteCharAt(sbSql.length() - 1);
+
         sbSql.append(" from ").append(tableName);
         if (null != expressionDialect) {
             String wherePart = expressionDialect.getWherePart();
@@ -101,22 +105,51 @@ public abstract class SqlDataSet<CTX extends DataSetCtx> extends DataSet<SqlData
         }
         String sql = sbSql.toString();
 
-        PreparedStatementSetter preparedStatementSetter = null == expressionDialect ?
-                (pstm) -> {
+        PreparedStatementSetter preparedStatementSetter;
+        if (log.isDebugEnabled()) {
+            preparedStatementSetter = null == expressionDialect ?
+                    (pstm) -> {
+                        log.debug("queryByDialect {}", sql);
+                    }
+                    : (pstm) -> {
+                StringBuilder sb = new StringBuilder();
+                int idx = 1;
+                if (null != expressionDialect.getWherePart()) {
+                    for (String paramName : expressionDialect.getParamNames()) {
+                        Object obj = expressionParams.getValue(paramName);
+                        if (ExpressionParams.empty == obj) {
+                            obj = null;
+                        } else if (obj instanceof Geometry) {
+                            obj = geometry2sqlObject((Geometry) obj);
+                        }
+                        pstm.setObject(idx, obj);
+                        sb.append(idx).append(':').append(obj).append(' ');
+                        idx++;
+                    }
                 }
-                : (pstm) -> {
-            int idx = 1;
-            for (String paramName : expressionDialect.getParamNames()) {
-                Object obj = expressionParams.getValue(paramName);
-                if (ExpressionParams.empty == obj) {
-                    obj = null;
-                } else if (obj instanceof Geometry) {
-                    obj = geometry2sqlObject((Geometry) obj);
+                log.debug("queryByDialect {} {}", sql, sb);
+            };
+        } else {
+            preparedStatementSetter = null == expressionDialect ?
+                    (pstm) -> {
+                    }
+                    : (pstm) -> {
+                int idx = 1;
+                if (null != expressionDialect.getWherePart()) {
+                    for (String paramName : expressionDialect.getParamNames()) {
+                        Object obj = expressionParams.getValue(paramName);
+                        if (ExpressionParams.empty == obj) {
+                            obj = null;
+                        } else if (obj instanceof Geometry) {
+                            obj = geometry2sqlObject((Geometry) obj);
+                        }
+                        pstm.setObject(idx, obj);
+                        idx++;
+                    }
                 }
-                pstm.setObject(idx, obj);
-                idx++;
-            }
-        };
+            };
+        }
+
 
         SqlFeatureResultSet sqlFeatureResultSet = new SqlFeatureResultSet(sql, preparedStatementSetter, propertyNames);
         return sqlFeatureResultSet;
@@ -195,10 +228,15 @@ public abstract class SqlDataSet<CTX extends DataSetCtx> extends DataSet<SqlData
                 throw new RuntimeException(e);
             }
             try {
-                propertyReaders = new PropertyReader[propertyNames.size()];
-                int i = 2;// 第一个字段是shape，从第二个字段开始拿
-                for (String propertyName : propertyNames) {
-                    propertyReaders[i - 2] = new PropertyReader(i, propertyName);
+                if (null != propertyNames && propertyNames.size() > 0) {
+                    propertyReaders = new PropertyReader[propertyNames.size()];
+                    int i = 2;// 第一个字段是shape，从第二个字段开始拿
+                    for (String propertyName : propertyNames) {
+                        propertyReaders[i - 2] = new PropertyReader(i, propertyName);
+                        i++;
+                    }
+                } else {
+                    propertyReaders = null;
                 }
 
                 hasNext = rs.next();
@@ -243,12 +281,17 @@ public abstract class SqlDataSet<CTX extends DataSetCtx> extends DataSet<SqlData
         @Override
         public Feature next() {
             try {
+                Feature feature;
                 Geometry geometry = readGeometry(rs, 1, ctx);
-                Map<String, Object> properties = new HashMap<>(propertyReaders.length);
-                for (PropertyReader propertyReader : propertyReaders) {
-                    properties.put(propertyReader.propertyName, propertyReader.read(rs));
+                if (null != propertyReaders) {
+                    Map<String, Object> properties = new HashMap<>(propertyReaders.length);
+                    for (PropertyReader propertyReader : propertyReaders) {
+                        properties.put(propertyReader.propertyName, propertyReader.read(rs));
+                    }
+                    feature = new Feature(geometry, properties);
+                } else {
+                    feature = new Feature(geometry);
                 }
-                Feature feature = new Feature(geometry, properties);
                 hasNext = rs.next();
                 return feature;
             } catch (SQLException e) {

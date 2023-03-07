@@ -25,7 +25,8 @@ import java.sql.SQLException;
 public class SqlDataConnect extends DataConnect<Connection> {
     private final DataSource dataSource;
 
-    public SqlDataConnect(DataSource dataSource) {
+    public SqlDataConnect(String id, DataSource dataSource) {
+        super(id);
         this.dataSource = dataSource;
     }
 
@@ -34,7 +35,7 @@ public class SqlDataConnect extends DataConnect<Connection> {
         try {
             return dataSource.getConnection();
         } catch (SQLException e) {
-            throw new ExternalResourceException(e);
+            throw new ExternalResourceException("获取数据库连接出错", e);
         }
     }
 

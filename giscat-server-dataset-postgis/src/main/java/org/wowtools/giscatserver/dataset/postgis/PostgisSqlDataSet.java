@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2022- "giscat (https://github.com/codingmiao/giscat)"
+ *
+ * 本项目采用自定义版权协议，在不同行业使用时有不同约束，详情参阅：
+ *
+ * https://github.com/codingmiao/giscat/blob/main/LICENSE
+ */
+
 package org.wowtools.giscatserver.dataset.postgis;
 
 import org.locationtech.jts.geom.Geometry;
@@ -29,8 +37,8 @@ public class PostgisSqlDataSet extends SqlDataSet<PostgisDataSetCtx> {
      * @param tableName             数据集对应表名，也可以是一个sql语句，传入sql语句时需要加括号和别名例如"(select a,b from xxx) t"
      * @param shapeName             空间数据字段名
      */
-    public PostgisSqlDataSet(SqlDataConnect dataConnect, Expression2SqlManager expression2SqlManager, String tableName, String shapeName) {
-        super(dataConnect, expression2SqlManager, tableName, shapeName);
+    public PostgisSqlDataSet(String id, SqlDataConnect dataConnect, Expression2SqlManager expression2SqlManager, String tableName, String shapeName) {
+        super(id, dataConnect, expression2SqlManager, tableName, shapeName);
     }
 
     private static final WKTWriter wKTWriter = new WKTWriter();
@@ -49,11 +57,15 @@ public class PostgisSqlDataSet extends SqlDataSet<PostgisDataSetCtx> {
         //LIMIT 10;
         String wkt = new StringBuilder("point(").append(x).append(' ').append(y).append(')').toString();
         StringBuilder sbSql = new StringBuilder("select t.* from(select ");
-        sbSql.append(shapeName).append(",");
-        for (String propertyName : propertyNames) {
-            sbSql.append(propertyName).append(',');
+        sbSql.append(shapeName);
+        if (null != propertyNames) {
+            sbSql.append(",");
+            for (String propertyName : propertyNames) {
+                sbSql.append(propertyName).append(',');
+            }
+            sbSql.deleteCharAt(sbSql.length() - 1);
         }
-        sbSql.deleteCharAt(sbSql.length() - 1);
+
         sbSql.append(" from ").append(tableName);
         if (null != expressionDialect) {
             String wherePart = expressionDialect.getWherePart();
@@ -75,15 +87,17 @@ public class PostgisSqlDataSet extends SqlDataSet<PostgisDataSetCtx> {
                 }
                 : (pstm) -> {
             int idx = 1;
-            for (String paramName : expressionDialect.getParamNames()) {
-                Object obj = expressionParams.getValue(paramName);
-                if (ExpressionParams.empty == obj) {
-                    obj = null;
-                } else if (obj instanceof Geometry) {
-                    obj = geometry2sqlObject((Geometry) obj);
+            if (null != expressionDialect.getWherePart()) {
+                for (String paramName : expressionDialect.getParamNames()) {
+                    Object obj = expressionParams.getValue(paramName);
+                    if (ExpressionParams.empty == obj) {
+                        obj = null;
+                    } else if (obj instanceof Geometry) {
+                        obj = geometry2sqlObject((Geometry) obj);
+                    }
+                    pstm.setObject(idx, obj);
+                    idx++;
                 }
-                pstm.setObject(idx, obj);
-                idx++;
             }
             pstm.setObject(idx, wkt);
             pstm.setInt(idx + 1, n);
@@ -105,7 +119,11 @@ public class PostgisSqlDataSet extends SqlDataSet<PostgisDataSetCtx> {
         if (null == obj) {
             return null;
         }
-        byte[] bytes = WKBReader.hexToBytes(obj.getValue());
+        String hex = obj.getValue();
+        if (null == hex) {
+            return null;
+        }
+        byte[] bytes = WKBReader.hexToBytes(hex);
         Geometry geo;
         try {
             geo = ctx.wkbReader.read(bytes);

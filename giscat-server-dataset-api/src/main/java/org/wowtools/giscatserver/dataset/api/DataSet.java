@@ -8,6 +8,8 @@
 package org.wowtools.giscatserver.dataset.api;
 
 
+import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
+import lombok.extern.slf4j.Slf4j;
 import org.wowtools.giscat.vector.mbexpression.Expression;
 import org.wowtools.giscat.vector.mbexpression.ExpressionParams;
 import org.wowtools.giscatserver.dataconnect.api.DataConnect;
@@ -20,8 +22,14 @@ import java.util.List;
  * @param <DC> 数据集所需的数据库连接
  * @param <ED> 数据集方言(如果有)
  */
-public abstract class DataSet<DC extends DataConnect, ED extends ExpressionDialect, CTX extends DataSetCtx> {
+@Slf4j
+public abstract class DataSet<DC extends DataConnect, ED extends ExpressionDialect, CTX extends DataSetCtx> implements AutoCloseable {
 
+    protected final String id;
+
+    public DataSet(String id) {
+        this.id = id;
+    }
 
     /**
      * 将表达式转为方言。如果此数据集不支持方言，则抛出UnsupportedOperationException
@@ -61,4 +69,24 @@ public abstract class DataSet<DC extends DataConnect, ED extends ExpressionDiale
      */
     protected abstract CTX createDatSetCtx();
 
+    /**
+     * 测试此数据集是否可用
+     *
+     * @throws ConfigException 不可用时抛出异常
+     */
+    public void test() throws ConfigException {
+        try (FeatureResultSet frs = nearestByDialect(List.of(), null, null, 100, 20, 1)) {
+            if (!frs.hasNext()) {
+                log.warn("DataSet {} 中没有数据，无法确认其正确性", id);
+            }
+            frs.next();
+        } catch (Exception e) {
+            throw new ConfigException("test error", e);
+        }
+
+    }
+
+    public String getId() {
+        return id;
+    }
 }

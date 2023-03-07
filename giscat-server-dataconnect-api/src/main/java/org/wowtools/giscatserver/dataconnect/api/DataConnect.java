@@ -17,6 +17,11 @@ import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ExternalResource
  */
 public abstract class DataConnect<T extends AutoCloseable> {
 
+    protected final String id;
+
+    public DataConnect(String id) {
+        this.id = id;
+    }
 
     /**
      * 获取实际的连接对象
@@ -35,6 +40,8 @@ public abstract class DataConnect<T extends AutoCloseable> {
 
     /**
      * 测试此数据连接是否可用
+     *
+     * @throws ConfigException 不可用时抛出异常
      */
     public void test() throws ConfigException {
         try {

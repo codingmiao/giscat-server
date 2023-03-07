@@ -8,8 +8,6 @@
 package org.wowtools.giscatserver.main.structure;
 
 
-import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
-
 /**
  * 地图
  *
@@ -36,19 +34,19 @@ public class Map {
         }
     }
 
+    private final String id;
     private final MapLayer[] mapLayers;
 
-    public Map(Layer[] layers, String[] layerNames) {
-        if (layerNames.length != layers.length) {
-            throw new ConfigException("图层数和图层名称不匹配");
-        }
-        mapLayers = new MapLayer[layerNames.length];
-        for (int i = 0; i < layerNames.length; i++) {
-            mapLayers[i] = new MapLayer(layerNames[i], layers[i]);
-        }
+    public Map(String id, MapLayer[] mapLayers) {
+        this.id = id;
+        this.mapLayers = mapLayers;
     }
 
     public MapLayer[] getMapLayers() {
         return mapLayers;
+    }
+
+    public String getId() {
+        return id;
     }
 }

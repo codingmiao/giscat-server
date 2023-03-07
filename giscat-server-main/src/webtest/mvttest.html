@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test</title>
+</head>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+    }
+
+    #control {
+        position: absolute;
+        top: 10px;
+        left: 50px;
+    }
+</style>
+<body>
+
+<script src='https://api.mapbox.com/mapbox-gl-js/v2.8.2/mapbox-gl.js'></script>
+<link href='https://api.mapbox.com/mapbox-gl-js/v2.8.2/mapbox-gl.css' rel='stylesheet'/>
+<div id='map' style='width: 100%; height: 100vh;'></div>
+<script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoiaW1saXV5dSIsImEiOiJjbDM4aHM4eXowMDBpM2RvZGdxdGZjeWMxIn0.mYtay02E_Z4iYOsDx3IdoA';
+    // 新建一个空白地图
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: {
+            "version": 8,
+            "sources": {},
+            "layers": []
+        },
+        center: [102.712251, 25.040609],
+        zoom: 4
+    });
+    map.on('load', function () {
+        const expression = encodeURIComponent('[">=", ["get", "id"], 10]')
+        //添加刚才发布的mvt数据源
+        map.addSource('tile', {
+            "type": "vector",
+            "tiles": [
+                'http://localhost:12331/giscat-server/Map/test_map/VectorTile/{z}/{x}/{y}?expression='+expression
+            ],
+            "minZoom": 1,
+            "maxZoom": 22
+        })
+        //添加各图层
+        map.addLayer({
+            "id": "polygons",
+            "type": "fill",
+            "source": "tile",// 上一步添加的数据源id
+            "source-layer": "polygons",// source-layer和mvt服务中的图层名对应
+            "layout": {"visibility": "visible"},
+            "paint": {"fill-color": '#51bbd6', "fill-opacity": 0.3, "fill-outline-color": '#0000ff'}
+        })
+
+        map.addLayer({
+            "id": "points",
+            "source": 'tile',
+            "source-layer": "points",
+            "type": "circle",
+            "paint": {
+                "circle-color": "#FF00FF",
+                "circle-radius": 5
+            }
+        });
+
+        map.addLayer({
+            "id": "lines",
+            "type": "line",
+            "source": 'tile',
+            "source-layer": "lines",
+            "layout": {
+                "line-join": "round",
+                "line-cap": "round"
+            },
+            "paint": {
+                "line-color": "#FF0000",
+                "line-width": 3
+            }
+        });
+
+        //矢量瓦片图层可以被点击
+        map.on('click', 'polygons', (e) => {
+            console.log(e.features[0])
+        })
+    })
+</script>
+
+</body>
+</html>

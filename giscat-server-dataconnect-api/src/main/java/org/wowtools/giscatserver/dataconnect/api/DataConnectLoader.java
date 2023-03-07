@@ -17,5 +17,5 @@ import java.util.Map;
  * @param <T> 加载器加载的数据连接类型
  */
 public abstract class DataConnectLoader<T extends DataConnect> {
-    public abstract T load(Map<String, Object> dataConnectConfig) throws ConfigException;
+    public abstract T load(String id, Map<String, Object> dataConnectConfig) throws ConfigException;
 }

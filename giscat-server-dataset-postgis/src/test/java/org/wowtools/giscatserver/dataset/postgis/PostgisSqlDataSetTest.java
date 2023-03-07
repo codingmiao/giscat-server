@@ -44,8 +44,8 @@ insert into testline (name, geom) values('name2', st_geomfromtext('srid=4326;lin
         ));
         HikariConfig configuration = new HikariConfig(properties);
         HikariDataSource dataSource = new HikariDataSource(configuration);
-        SqlDataConnect dataConnect = new SqlDataConnect(dataSource);
-        dataSet = new PostgisSqlDataSet(dataConnect, new PostgisExpression2SqlManager(), "testline", "geom");
+        SqlDataConnect dataConnect = new SqlDataConnect("testDc", dataSource);
+        dataSet = new PostgisSqlDataSet("testDs", dataConnect, new PostgisExpression2SqlManager(), "testline", "geom");
     }
 
 

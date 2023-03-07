@@ -1,22 +1,10 @@
-/*****************************************************************
- *  Copyright (c) 2022- "giscat by 刘雨 (https://github.com/codingmiao/giscat)"
- *  Licensed to the Apache Software Foundation (ASF) under one
- *  or more contributor license agreements.  See the NOTICE file
- *  distributed with this work for additional information
- *  regarding copyright ownership.  The ASF licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License.  You may obtain a copy of the License at
+/*
+ * Copyright (c) 2022- "giscat (https://github.com/codingmiao/giscat)"
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * 本项目采用自定义版权协议，在不同行业使用时有不同约束，详情参阅：
  *
- *  Unless required by applicable law or agreed to in writing,
- *  software distributed under the License is distributed on an
- *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  KIND, either express or implied.  See the License for the
- *  specific language governing permissions and limitations
- *  under the License.
- ****************************************************************/
+ * https://github.com/codingmiao/giscat/blob/main/LICENSE
+ */
 package org.wowtools.giscatserver.dataset.sql;
 
 import org.wowtools.giscatserver.dataset.api.ExpressionDialect;
@@ -47,51 +35,56 @@ public class SqlExpressionDialect extends ExpressionDialect {
      * @param wherePart where部分的sql字符串(以$符号表示参数绑定)，形如 a=$x and b=$y
      */
     public SqlExpressionDialect(String wherePart) {
-        /* 替换$符参数绑定 */
-        int size = wherePart.length();
-        StringBuilder newWherePart = new StringBuilder();
-        List<String> paramNameList = new LinkedList<>();
-        boolean inStrParam = false;//当前位置是否在一个字符参数内，若是，不作解析
-        boolean in$ = false;//当前位置是否在$参数内，若是，读取字符拼接参数
-        StringBuilder paramName = null;
-        for (int i = 0; i < size; i++) {
-            char c = wherePart.charAt(i);
-            newWherePart.append(c);
-            if (c == '\'') {
-                inStrParam = !inStrParam;
-                continue;
-            }
-            if (inStrParam) {
-                continue;
-            }
-            if (c == '$') {
-                in$ = !in$;
-                paramName = new StringBuilder("$");
-                continue;
-            }
-            if (in$) {
-                if (c == ' ' || c == '\t' || c == ',' || c == ')') {
-                    in$ = false;
-                    //找一个$参数结束，保存结果
-                    String name = paramName.toString();
-                    paramNameList.add(name);
-                    newWherePart.delete(newWherePart.length() - name.length() - 1, newWherePart.length());
-                    newWherePart.append("?").append(c);
-                    paramName = null;
-                } else {
-                    paramName.append(c);
+        if (null != wherePart) {
+            /* 替换$符参数绑定 */
+            int size = wherePart.length();
+            StringBuilder newWherePart = new StringBuilder();
+            List<String> paramNameList = new LinkedList<>();
+            boolean inStrParam = false;//当前位置是否在一个字符参数内，若是，不作解析
+            boolean in$ = false;//当前位置是否在$参数内，若是，读取字符拼接参数
+            StringBuilder paramName = null;
+            for (int i = 0; i < size; i++) {
+                char c = wherePart.charAt(i);
+                newWherePart.append(c);
+                if (c == '\'') {
+                    inStrParam = !inStrParam;
+                    continue;
+                }
+                if (inStrParam) {
+                    continue;
+                }
+                if (c == '$') {
+                    in$ = !in$;
+                    paramName = new StringBuilder("$");
+                    continue;
+                }
+                if (in$) {
+                    if (c == ' ' || c == '\t' || c == ',' || c == ')') {
+                        in$ = false;
+                        //找一个$参数结束，保存结果
+                        String name = paramName.toString();
+                        paramNameList.add(name);
+                        newWherePart.delete(newWherePart.length() - name.length() - 1, newWherePart.length());
+                        newWherePart.append("?").append(c);
+                        paramName = null;
+                    } else {
+                        paramName.append(c);
+                    }
                 }
             }
+            if (null != paramName) {
+                String name = paramName.toString();
+                paramNameList.add(name);
+                newWherePart.delete(newWherePart.length() - name.length(), newWherePart.length());
+                newWherePart.append("?");
+            }
+            this.wherePart = newWherePart.toString();
+            paramNames = new String[paramNameList.size()];
+            paramNameList.toArray(paramNames);
+        } else {
+            this.wherePart = null;
+            paramNames = null;
         }
-        if (null != paramName) {
-            String name = paramName.toString();
-            paramNameList.add(name);
-            newWherePart.delete(newWherePart.length() - name.length(), newWherePart.length());
-            newWherePart.append("?");
-        }
-        this.wherePart = newWherePart.toString();
-        paramNames = new String[paramNameList.size()];
-        paramNameList.toArray(paramNames);
     }
 
     /**

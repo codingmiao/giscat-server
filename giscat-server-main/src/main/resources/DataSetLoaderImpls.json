@@ -1,0 +1,3 @@
+{
+  "PostgisDataSetLoader": "org.wowtools.giscatserver.dataset.postgis.PostgisDataSetLoader"
+}

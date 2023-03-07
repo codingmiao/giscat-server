@@ -8,6 +8,7 @@
 
 package org.wowtools.giscatserver.main.structure;
 
+import org.wowtools.giscat.vector.mbexpression.Expression;
 import org.wowtools.giscatserver.dataset.api.DataSet;
 
 import java.util.ArrayList;
@@ -26,14 +27,20 @@ public class LayerDataRule {
 
     private final ArrayList ruleExpression;
 
-    public LayerDataRule(byte minZoom, byte maxZoom, DataSet dataSet, ArrayList ruleExpression) {
+    private final Expression<Boolean> ruleExpressionObj;
+
+    private final byte orderNum;
+
+    public LayerDataRule(byte minZoom, byte maxZoom, DataSet dataSet, ArrayList ruleExpression, byte orderNum) {
         if (maxZoom < 0) {
-            minZoom = Byte.MAX_VALUE;
+            maxZoom = Byte.MAX_VALUE;
         }
         this.minZoom = minZoom;
         this.maxZoom = maxZoom;
         this.dataSet = dataSet;
         this.ruleExpression = ruleExpression;
+        this.ruleExpressionObj = null == ruleExpression ? null : Expression.newInstance(ruleExpression);
+        this.orderNum = orderNum;
     }
 
     /**
@@ -52,5 +59,21 @@ public class LayerDataRule {
 
     public ArrayList getRuleExpression() {
         return ruleExpression;
+    }
+
+    public byte getMinZoom() {
+        return minZoom;
+    }
+
+    public byte getMaxZoom() {
+        return maxZoom;
+    }
+
+    public byte getOrderNum() {
+        return orderNum;
+    }
+
+    public Expression<Boolean> getRuleExpressionObj() {
+        return ruleExpressionObj;
     }
 }

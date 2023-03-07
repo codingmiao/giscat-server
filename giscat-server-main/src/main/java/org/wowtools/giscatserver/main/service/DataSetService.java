@@ -9,7 +9,6 @@ package org.wowtools.giscatserver.main.service;
 
 
 import org.wowtools.giscat.vector.mbexpression.Expression;
-import org.wowtools.giscat.vector.mbexpression.ExpressionParams;
 import org.wowtools.giscat.vector.pojo.Feature;
 import org.wowtools.giscatserver.dataset.api.DataSet;
 import org.wowtools.giscatserver.main.util.DataSetUtil;
@@ -38,7 +37,7 @@ public class DataSetService {
      * @param expressionParams 查询参数
      * @return features
      */
-    public List<Feature> query(List<String> propertyNames, String strExpression, ExpressionParams expressionParams) {
+    public List<Feature> query(List<String> propertyNames, String strExpression, java.util.Map<String, Object> expressionParams) {
         Expression<Boolean> expression = Expression.newInstance(strExpression);
         return DataSetUtil.queryListByExpression(dataSet, propertyNames, expression, expressionParams);
     }
@@ -54,7 +53,7 @@ public class DataSetService {
      * @param n                最多返回几条数据
      * @return features
      */
-    public List<Feature> nearest(List<String> propertyNames, String strExpression, ExpressionParams expressionParams, double x, double y, int n) {
+    public List<Feature> nearest(List<String> propertyNames, String strExpression, java.util.Map<String, Object> expressionParams, double x, double y, int n) {
         Expression<Boolean> expression = Expression.newInstance(strExpression);
         return DataSetUtil.nearest(dataSet, propertyNames, expression, expressionParams, x, y, n);
     }

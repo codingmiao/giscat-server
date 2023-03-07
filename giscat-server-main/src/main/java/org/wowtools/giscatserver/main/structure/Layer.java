@@ -18,9 +18,11 @@ import java.util.ArrayList;
  * @date 2023/2/24
  */
 public class Layer {
+    private final String id;
     private final LayerDataRule[] layerDataRules;
 
-    public Layer(LayerDataRule[] layerDataRules) {
+    public Layer(String id, LayerDataRule[] layerDataRules) {
+        this.id = id;
         this.layerDataRules = layerDataRules;
     }
 
@@ -42,6 +44,10 @@ public class Layer {
         return null;
     }
 
+    public String getId() {
+        return id;
+    }
+
     /**
      * 将一个表达式与当前rule合并得到新表达式
      *
@@ -50,17 +56,25 @@ public class Layer {
      * @return expression
      */
     public static Expression<Boolean> mergeLayerExpression(LayerDataRule rule, ArrayList expression) {
-        ArrayList layerExpression;
         if (null != rule.getRuleExpression()) {
-            layerExpression = new ArrayList(3);
+            if (null == expression) {
+                return rule.getRuleExpressionObj();
+            }
+            ArrayList layerExpression = new ArrayList(3);
             layerExpression.add("all");
             layerExpression.add(expression);
             layerExpression.add(rule.getRuleExpression());
+            return Expression.newInstance(layerExpression);
         } else {
-            layerExpression = expression;
+            if (null == expression) {
+                return null;
+            }
+            return Expression.newInstance(expression);
         }
-        Expression<Boolean> expressionObj = Expression.newInstance(layerExpression);
-        return expressionObj;
     }
 
+
+    public LayerDataRule[] getLayerDataRules() {
+        return layerDataRules;
+    }
 }

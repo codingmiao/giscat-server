@@ -24,12 +24,12 @@ import java.util.Properties;
 public class SqlDataConnectLoader extends DataConnectLoader<SqlDataConnect> {
 
     @Override
-    public SqlDataConnect load(Map<String, Object> cpConfig) throws ConfigException {
+    public SqlDataConnect load(String id, Map<String, Object> cpConfig) throws ConfigException {
         HikariDataSource dataSource;
         Properties properties = new Properties(cpConfig.size());
         cpConfig.forEach((k, v) -> properties.setProperty(k, String.valueOf(v)));
         HikariConfig configuration = new HikariConfig(properties);
         dataSource = new HikariDataSource(configuration);
-        return new SqlDataConnect(dataSource);
+        return new SqlDataConnect(id, dataSource);
     }
 }

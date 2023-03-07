@@ -8,6 +8,7 @@
 
 package org.wowtools.giscatserver.main.util;
 
+import cn.com.enersun.mywebgis.mywebgisservice.common.exception.OtherException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.wowtools.giscat.vector.mbexpression.Expression;
 import org.wowtools.giscat.vector.mbexpression.ExpressionParams;
@@ -35,6 +36,9 @@ public class DataSetUtil {
      * @return ArrayList
      */
     public static ArrayList toJsonArray(String expressionStr) {
+        if (null == expressionStr) {
+            return null;
+        }
         ArrayList expressionArray;
         try {
             expressionArray = Constant.jsonMapper.readValue(expressionStr, ArrayList.class);
@@ -53,11 +57,15 @@ public class DataSetUtil {
      * @param expressionParams 查询参数
      * @return features
      */
-    public static List<Feature> queryListByExpression(DataSet dataSet, List<String> propertyNames, Expression<Boolean> expression, ExpressionParams expressionParams) {
+    public static List<Feature> queryListByExpression(DataSet dataSet, List<String> propertyNames, Expression<Boolean> expression, java.util.Map<String, Object> expressionParams) {
         ExpressionDialect expressionDialect = dataSet.buildExpressionDialect(expression);
-        FeatureResultSet frs = dataSet.queryByDialect(propertyNames, expressionDialect, expressionParams);
+        ExpressionParams expressionParamsObj = new ExpressionParams(expressionParams);
         LinkedList<Feature> res = new LinkedList<>();
-        frs.forEachRemaining(res::add);
+        try (FeatureResultSet frs = dataSet.queryByDialect(propertyNames, expressionDialect, expressionParamsObj)) {
+            frs.forEachRemaining(res::add);
+        } catch (Exception e) {
+            throw new OtherException("queryListByExpression error", e);
+        }
         return res;
     }
 
@@ -72,11 +80,15 @@ public class DataSetUtil {
      * @param n                最多返回几条数据
      * @return features
      */
-    public static List<Feature> nearest(DataSet dataSet, List<String> propertyNames, Expression<Boolean> expression, ExpressionParams expressionParams, double x, double y, int n) {
+    public static List<Feature> nearest(DataSet dataSet, List<String> propertyNames, Expression<Boolean> expression, java.util.Map<String, Object> expressionParams, double x, double y, int n) {
         ExpressionDialect expressionDialect = dataSet.buildExpressionDialect(expression);
-        FeatureResultSet frs = dataSet.nearestByDialect(propertyNames, expressionDialect, expressionParams, x, y, n);
-        List<Feature> res = new LinkedList<>();
-        frs.forEachRemaining(res::add);
+        ExpressionParams expressionParamsObj = new ExpressionParams(expressionParams);
+        LinkedList<Feature> res = new LinkedList<>();
+        try (FeatureResultSet frs = dataSet.nearestByDialect(propertyNames, expressionDialect, expressionParamsObj, x, y, n)) {
+            frs.forEachRemaining(res::add);
+        } catch (Exception e) {
+            throw new OtherException("queryListByExpression error", e);
+        }
         return res;
     }
 }

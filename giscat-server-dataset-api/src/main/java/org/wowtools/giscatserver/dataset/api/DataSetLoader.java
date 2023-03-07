@@ -21,5 +21,5 @@ import java.util.Map;
  * @param <CTX> 数据集的查询上下文
  */
 public abstract class DataSetLoader<DC extends DataConnect, ED extends ExpressionDialect, CTX extends DataSetCtx, T extends DataSet<DC, ED, CTX>> {
-    public abstract T load(Map<String, Object> dataSetConfig, DC dataConnect) throws ConfigException;
+    public abstract T load(String id, Map<String, Object> dataSetConfig, DC dataConnect) throws ConfigException;
 }
