@@ -7,6 +7,7 @@
  */
 package org.wowtools.giscatserver.dataset.sql.expression2sql;
 
+import org.jetbrains.annotations.NotNull;
 import org.wowtools.giscat.vector.mbexpression.Expression;
 import org.wowtools.giscatserver.dataset.sql.Expression2SqlManager;
 
@@ -40,7 +41,7 @@ public abstract class Expression2Sql<E extends Expression> {
     public abstract Part convert(E expression, Expression2SqlManager expression2SqlManager);
 
 
-    protected Part getValue(Object o, Expression2SqlManager expression2SqlManager) {
+    protected Part getValue(Object o, @NotNull Expression2SqlManager expression2SqlManager) {
         if (o instanceof Expression) {
             Expression subExpression = (Expression) o;
             Expression2Sql subExpression2Sql = expression2SqlManager.getExpression2Sql(subExpression);

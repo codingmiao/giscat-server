@@ -8,6 +8,8 @@
 package org.wowtools.giscatserver.main.structure;
 
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * 地图
  *
@@ -37,7 +39,7 @@ public class Map {
     private final String id;
     private final MapLayer[] mapLayers;
 
-    public Map(String id, MapLayer[] mapLayers) {
+    public Map(@NotNull String id, @NotNull MapLayer[] mapLayers) {
         this.id = id;
         this.mapLayers = mapLayers;
     }

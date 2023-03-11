@@ -8,6 +8,8 @@
 
 package org.wowtools.giscatserver.main.util;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -18,11 +20,11 @@ import java.util.concurrent.*;
  * @date 2023/3/7
  */
 public class AsyncTaskUtil {
-    private static final ExecutorService pool = new ThreadPoolExecutor(0, Constant.threadNum,
+    private static final ExecutorService pool = new ThreadPoolExecutor(0, Constant.threadPoolMaxNum,
             60000, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<Runnable>());
 
-    public static void executeAsyncTasks(List<Runnable> tasks) {
+    public static void executeAsyncTasks(@NotNull List<Runnable> tasks) {
         int n = tasks.size();
         Semaphore semaphore = new Semaphore(0);
         for (Runnable task : tasks) {

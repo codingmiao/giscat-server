@@ -1,5 +1,14 @@
+/*
+ * Copyright (c) 2022- "giscat (https://github.com/codingmiao/giscat)"
+ *
+ * 本项目采用自定义版权协议，在不同行业使用时有不同约束，详情参阅：
+ *
+ * https://github.com/codingmiao/giscat/blob/main/LICENSE
+ */
+
 package org.wowtools.giscatserver.dataset.sql.expression2sql.decision;
 
+import org.jetbrains.annotations.NotNull;
 import org.wowtools.giscat.vector.mbexpression.Expression;
 import org.wowtools.giscatserver.dataset.sql.Expression2SqlManager;
 import org.wowtools.giscatserver.dataset.sql.expression2sql.Expression2Sql;
@@ -14,7 +23,7 @@ import java.util.ArrayList;
  */
 abstract class Compare2Sql<T extends Expression<Boolean>> extends Expression2Sql<T> {
     @Override
-    public Part convert(T expression, Expression2SqlManager expression2SqlManager) {
+    public @NotNull Part convert(@NotNull T expression, Expression2SqlManager expression2SqlManager) {
         ArrayList expressionArray = expression.getExpressionArray();
         Part p1 = getValue(expressionArray.get(1), expression2SqlManager);
         Part p2 = getValue(expressionArray.get(2), expression2SqlManager);

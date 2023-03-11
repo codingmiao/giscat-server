@@ -11,6 +11,7 @@ package org.wowtools.giscatserver.main;
 import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
 import cn.com.enersun.mywebgis.mywebgisservice.common.exception.InputException;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import org.wowtools.common.utils.ResourcesReader;
 import org.wowtools.giscatserver.dataconnect.api.DataConnect;
@@ -26,6 +27,7 @@ import org.wowtools.giscatserver.main.structure.LayerDataRule;
 import org.wowtools.giscatserver.main.structure.Map;
 import org.wowtools.giscatserver.main.util.Constant;
 
+import java.io.IOException;
 import java.util.*;
 
 
@@ -318,6 +320,15 @@ public class ConfigManager {
     }
 
     private static void loadVectorTileService() {
+        if (null != vectorTileServices) {
+            vectorTileServices.forEach((id, service) -> {
+                try {
+                    service.close();
+                } catch (IOException e) {
+                    log.warn("VectorTileServices {}关闭出错，可能产生资源泄露", id);
+                }
+            });
+        }
         java.util.Map<String, VectorTileService> _vectorTileServices = new HashMap<>();
         org.wowtools.dao.SqlUtil.queryWithJdbc(Constant.giscatConfigConnectionPool.getConnection(), (rs) -> {
             String mapId = rs.getString(1);
@@ -349,7 +360,7 @@ public class ConfigManager {
         vectorTileServices = java.util.Map.copyOf(_vectorTileServices);
     }
 
-    public static DataConnect getDataConnect(String id) {
+    public static @NotNull DataConnect getDataConnect(String id) {
         DataConnect o = dataConnects.get(id);
         if (null == o) {
             throw new InputException("DataConnect does not exist: " + id);
@@ -357,7 +368,7 @@ public class ConfigManager {
         return o;
     }
 
-    public static DataSet getDataSet(String id) {
+    public static @NotNull DataSet getDataSet(String id) {
         DataSet o = dataSets.get(id);
         if (null == o) {
             throw new InputException("DataSet does not exist: " + id);
@@ -365,7 +376,7 @@ public class ConfigManager {
         return o;
     }
 
-    public static Layer getLayer(String id) {
+    public static @NotNull Layer getLayer(String id) {
         Layer o = layers.get(id);
         if (null == o) {
             throw new InputException("Layer does not exist: " + id);
@@ -373,7 +384,7 @@ public class ConfigManager {
         return o;
     }
 
-    public static Map getMap(String id) {
+    public static @NotNull Map getMap(String id) {
         Map o = maps.get(id);
         if (null == o) {
             throw new InputException("Map does not exist: " + id);
@@ -381,7 +392,7 @@ public class ConfigManager {
         return o;
     }
 
-    public static DataSetService getDataSetService(String id) {
+    public static @NotNull DataSetService getDataSetService(String id) {
         DataSetService o = dataSetServices.get(id);
         if (null == o) {
             throw new InputException("DataSetService does not exist: " + id);
@@ -389,7 +400,7 @@ public class ConfigManager {
         return o;
     }
 
-    public static LayerService getLayerService(String id) {
+    public static @NotNull LayerService getLayerService(String id) {
         LayerService o = layerServices.get(id);
         if (null == o) {
             throw new InputException("LayerService does not exist: " + id);
@@ -397,7 +408,7 @@ public class ConfigManager {
         return o;
     }
 
-    public static MapService getMapService(String id) {
+    public static @NotNull MapService getMapService(String id) {
         MapService o = mapServices.get(id);
         if (null == o) {
             throw new InputException("MapService does not exist: " + id);
@@ -405,7 +416,7 @@ public class ConfigManager {
         return o;
     }
 
-    public static VectorTileService getVectorTileService(String id) {
+    public static @NotNull VectorTileService getVectorTileService(String id) {
         VectorTileService o = vectorTileServices.get(id);
         if (null == o) {
             throw new InputException("VectorTileService does not exist: " + id);

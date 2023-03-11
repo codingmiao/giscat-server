@@ -7,6 +7,8 @@
  */
 package org.wowtools.giscatserver.main.structure;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.wowtools.giscat.vector.mbexpression.Expression;
 
 import java.util.ArrayList;
@@ -21,7 +23,7 @@ public class Layer {
     private final String id;
     private final LayerDataRule[] layerDataRules;
 
-    public Layer(String id, LayerDataRule[] layerDataRules) {
+    public Layer(String id, @NotNull LayerDataRule[] layerDataRules) {
         this.id = id;
         this.layerDataRules = layerDataRules;
     }
@@ -32,7 +34,7 @@ public class Layer {
      * @param zoom zoom
      * @return LayerDataRule
      */
-    public LayerDataRule getRule(byte zoom) {
+    public @Nullable LayerDataRule getRule(byte zoom) {
         if (zoom < 0) {
             return layerDataRules[0];
         }
@@ -55,7 +57,7 @@ public class Layer {
      * @param expression expression
      * @return expression
      */
-    public static Expression<Boolean> mergeLayerExpression(LayerDataRule rule, ArrayList expression) {
+    public static @Nullable Expression<Boolean> mergeLayerExpression(@NotNull LayerDataRule rule, @Nullable ArrayList expression) {
         if (null != rule.getRuleExpression()) {
             if (null == expression) {
                 return rule.getRuleExpressionObj();

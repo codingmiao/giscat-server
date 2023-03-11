@@ -7,10 +7,13 @@
  */
 package org.wowtools.giscatserver.dataset.sql;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.wowtools.giscatserver.dataset.api.ExpressionDialect;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * sql方言，将表达式转换为sql语句
@@ -23,18 +26,18 @@ public class SqlExpressionDialect extends ExpressionDialect {
     /**
      * where部分的sql字符串，形如 a=? and b=?
      */
-    private final String wherePart;
+    private final @Nullable String wherePart;
 
     /**
      * 第index-1个绑定参数存放的是哪个变量,形如[$x,$y]
      */
-    private final String[] paramNames;
+    private final String @Nullable [] paramNames;
 
 
     /**
      * @param wherePart where部分的sql字符串(以$符号表示参数绑定)，形如 a=$x and b=$y
      */
-    public SqlExpressionDialect(String wherePart) {
+    public SqlExpressionDialect(@Nullable String wherePart) {
         if (null != wherePart) {
             /* 替换$符参数绑定 */
             int size = wherePart.length();
@@ -90,7 +93,7 @@ public class SqlExpressionDialect extends ExpressionDialect {
     /**
      * where部分的sql字符串，形如 a=? and b=?
      */
-    public String getWherePart() {
+    public @Nullable String getWherePart() {
         return wherePart;
     }
 
@@ -102,10 +105,10 @@ public class SqlExpressionDialect extends ExpressionDialect {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(wherePart);
+    public @NotNull String toString() {
+        StringBuilder sb = new StringBuilder(Objects.requireNonNull(wherePart));
         sb.append("\t paramNames: ");
-        for (String paramName : paramNames) {
+        for (String paramName : Objects.requireNonNull(paramNames)) {
             sb.append("{").append(paramName).append("}, ");
         }
         return sb.toString();

@@ -7,6 +7,8 @@
  */
 package org.wowtools.giscatserver.main.service;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.wowtools.giscat.vector.mbexpression.Expression;
 import org.wowtools.giscat.vector.pojo.Feature;
 import org.wowtools.giscatserver.main.structure.Layer;
@@ -26,7 +28,7 @@ public class LayerService {
 
     private final Layer layer;
 
-    public LayerService(Layer layer) {
+    public LayerService(@NotNull Layer layer) {
         this.layer = layer;
     }
 
@@ -39,7 +41,7 @@ public class LayerService {
      * @param zoom             层级。如果为负，则表示忽略层级，此时若layer中包含多个rule，则取首个rule并忽略其level
      * @return features 若为null则表示未找到对应的rule
      */
-    public List<Feature> query(List<String> propertyNames, String strExpression, java.util.Map<String, Object> expressionParams, byte zoom) {
+    public @Nullable List<Feature> query(@Nullable List<String> propertyNames, @Nullable String strExpression, @Nullable java.util.Map<String, Object> expressionParams, byte zoom) {
         ArrayList expression = DataSetUtil.toJsonArray(strExpression);
         LayerDataRule rule = layer.getRule(zoom);
         if (null == rule) {
@@ -62,7 +64,7 @@ public class LayerService {
      * @param zoom             层级。如或为负，则表示忽略层级，此时若layer中包含多个rule，则取首个rule并忽略其level
      * @return features 若为null则表示未找到对应的rule
      */
-    public List<Feature> nearest(List<String> propertyNames, String strExpression, java.util.Map<String, Object> expressionParams, double x, double y, int n, byte zoom) {
+    public @Nullable List<Feature> nearest(@Nullable List<String> propertyNames, @Nullable String strExpression, @Nullable java.util.Map<String, Object> expressionParams, double x, double y, int n, byte zoom) {
         ArrayList expression = DataSetUtil.toJsonArray(strExpression);
         LayerDataRule rule = layer.getRule(zoom);
         if (null == rule) {

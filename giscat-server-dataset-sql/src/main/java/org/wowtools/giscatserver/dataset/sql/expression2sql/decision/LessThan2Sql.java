@@ -7,6 +7,7 @@
  */
 package org.wowtools.giscatserver.dataset.sql.expression2sql.decision;
 
+import org.jetbrains.annotations.NotNull;
 import org.wowtools.giscat.vector.mbexpression.decision.LessThan;
 
 /**
@@ -15,7 +16,7 @@ import org.wowtools.giscat.vector.mbexpression.decision.LessThan;
  */
 public class LessThan2Sql extends Compare2Sql<LessThan> {
     @Override
-    protected String getSymbol() {
+    protected @NotNull String getSymbol() {
         return "<";
     }
 }

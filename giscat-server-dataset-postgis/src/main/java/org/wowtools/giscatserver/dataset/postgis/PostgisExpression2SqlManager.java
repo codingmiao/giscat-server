@@ -7,6 +7,8 @@
  */
 package org.wowtools.giscatserver.dataset.postgis;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.wowtools.giscat.vector.mbexpression.spatial.BboxIntersects;
 import org.wowtools.giscat.vector.mbexpression.spatial.GeoIntersects;
 import org.wowtools.giscatserver.dataset.sql.Expression2SqlManager;
@@ -24,10 +26,10 @@ import java.util.List;
 public class PostgisExpression2SqlManager extends Expression2SqlManager {
 
     @Override
-    protected Expression2Sql<BboxIntersects> getBboxIntersects() {
+    protected @NotNull Expression2Sql<BboxIntersects> getBboxIntersects() {
         return new Expression2Sql<>() {
             @Override
-            public Part convert(BboxIntersects expression, Expression2SqlManager expression2SqlManager) {
+            public @NotNull Part convert(@NotNull BboxIntersects expression, @NotNull Expression2SqlManager expression2SqlManager) {
                 Object o = expression.getExpressionArray().get(1);
                 // "shape && ST_MakeEnvelope(?, ?, ?, ?, 4326)";
                 ArrayList list = (ArrayList) o;
@@ -43,10 +45,10 @@ public class PostgisExpression2SqlManager extends Expression2SqlManager {
     }
 
     @Override
-    protected Expression2Sql<GeoIntersects> getGeoIntersects() {
+    protected @NotNull Expression2Sql<GeoIntersects> getGeoIntersects() {
         return new Expression2Sql<>() {
             @Override
-            public Part convert(GeoIntersects expression, Expression2SqlManager expression2SqlManager) {
+            public @NotNull Part convert(@NotNull GeoIntersects expression, @NotNull Expression2SqlManager expression2SqlManager) {
                 //"ST_intersects(shape,st_geomfromtext('srid=4326;linestring(110 20,112 23)')";
                 Object o = expression.getExpressionArray().get(1);
                 StringBuilder sb = new StringBuilder("ST_intersects(");
@@ -60,7 +62,7 @@ public class PostgisExpression2SqlManager extends Expression2SqlManager {
     }
 
     @Override
-    protected List<Expression2Sql> getExtends() {
+    protected @Nullable List<Expression2Sql> getExtends() {
         return null;
     }
 }

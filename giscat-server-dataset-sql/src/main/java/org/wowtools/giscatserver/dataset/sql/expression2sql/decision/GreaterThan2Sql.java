@@ -7,6 +7,7 @@
  */
 package org.wowtools.giscatserver.dataset.sql.expression2sql.decision;
 
+import org.jetbrains.annotations.NotNull;
 import org.wowtools.giscat.vector.mbexpression.decision.GreaterThan;
 
 /**
@@ -15,7 +16,7 @@ import org.wowtools.giscat.vector.mbexpression.decision.GreaterThan;
  */
 public class GreaterThan2Sql extends Compare2Sql<GreaterThan> {
     @Override
-    protected String getSymbol() {
+    protected @NotNull String getSymbol() {
         return ">";
     }
 }

@@ -30,6 +30,8 @@
 <link href='https://api.mapbox.com/mapbox-gl-js/v2.8.2/mapbox-gl.css' rel='stylesheet'/>
 <div id='map' style='width: 100%; height: 100vh;'></div>
 <script>
+    //数据来源 https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json
+
     mapboxgl.accessToken = 'pk.eyJ1IjoiaW1saXV5dSIsImEiOiJjbDM4aHM4eXowMDBpM2RvZGdxdGZjeWMxIn0.mYtay02E_Z4iYOsDx3IdoA';
     // 新建一个空白地图
     const map = new mapboxgl.Map({
@@ -39,16 +41,19 @@
             "sources": {},
             "layers": []
         },
+        refreshExpiredTiles: false,//瓦片过期后自动刷新，这里为了测试方便调整为false
         center: [102.712251, 25.040609],
         zoom: 4
     });
     map.on('load', function () {
-        const expression = encodeURIComponent('[">=", ["get", "id"], 10]')
+        const expression = encodeURIComponent('[">=", ["get", "id"], "$1"]')
+
+        const bindParams = encodeURIComponent('{"$1":10}')
         //添加刚才发布的mvt数据源
         map.addSource('tile', {
             "type": "vector",
             "tiles": [
-                'http://localhost:12331/giscat-server/Map/test_map/VectorTile/{z}/{x}/{y}?expression='+expression
+                'http://localhost:12331/giscat-server/Map/test_map/VectorTile/{z}/{x}/{y}?expression=' + expression + '&bindParams=' + bindParams
             ],
             "minZoom": 1,
             "maxZoom": 22

@@ -9,6 +9,8 @@ package org.wowtools.giscatserver.dataset.sql;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.locationtech.jts.geom.Geometry;
 import org.wowtools.giscat.vector.mbexpression.Expression;
 import org.wowtools.giscat.vector.mbexpression.ExpressionParams;
@@ -67,7 +69,7 @@ public abstract class SqlDataSet<CTX extends DataSetCtx> extends DataSet<SqlData
      * @return 方言
      */
     @Override
-    public SqlExpressionDialect buildExpressionDialect(Expression<Boolean> expression) {
+    public @NotNull SqlExpressionDialect buildExpressionDialect(@Nullable Expression<Boolean> expression) {
         String wherePart;
         if (null != expression) {
             Expression2Sql expression2Sql = expression2SqlManager.getExpression2Sql(expression);
@@ -77,12 +79,11 @@ public abstract class SqlDataSet<CTX extends DataSetCtx> extends DataSet<SqlData
             wherePart = null;
         }
 
-        SqlExpressionDialect sqlExpressionDialect = new SqlExpressionDialect(wherePart);
-        return sqlExpressionDialect;
+        return new SqlExpressionDialect(wherePart);
     }
 
     @Override
-    public FeatureResultSet queryByDialect(List<String> propertyNames, SqlExpressionDialect expressionDialect, ExpressionParams expressionParams) {
+    public @NotNull FeatureResultSet queryByDialect(@Nullable List<String> propertyNames, @Nullable SqlExpressionDialect expressionDialect, @Nullable ExpressionParams expressionParams) {
         StringBuilder sbSql = new StringBuilder("select ");
         sbSql.append(shapeName);
         if (null != propertyNames) {
@@ -151,8 +152,7 @@ public abstract class SqlDataSet<CTX extends DataSetCtx> extends DataSet<SqlData
         }
 
 
-        SqlFeatureResultSet sqlFeatureResultSet = new SqlFeatureResultSet(sql, preparedStatementSetter, propertyNames);
-        return sqlFeatureResultSet;
+        return new SqlFeatureResultSet(sql, preparedStatementSetter, propertyNames);
     }
 
     /**
@@ -162,10 +162,6 @@ public abstract class SqlDataSet<CTX extends DataSetCtx> extends DataSet<SqlData
      * @return sql Object
      */
     protected abstract Object geometry2sqlObject(Geometry geometry);
-
-
-    @Override
-    public abstract FeatureResultSet nearestByDialect(List<String> propertyNames, SqlExpressionDialect expressionDialect, ExpressionParams expressionParams, double x, double y, int n);
 
 
     /**
@@ -191,7 +187,7 @@ public abstract class SqlDataSet<CTX extends DataSetCtx> extends DataSet<SqlData
             this.propertyName = propertyName;
         }
 
-        public Object read(ResultSet rs) throws SQLException {
+        public Object read(@NotNull ResultSet rs) throws SQLException {
             return rs.getObject(index);
         }
     }
@@ -210,13 +206,13 @@ public abstract class SqlDataSet<CTX extends DataSetCtx> extends DataSet<SqlData
         private final PreparedStatement pstm;
         private final ResultSet rs;
 
-        private final PropertyReader[] propertyReaders;
+        private final PropertyReader @Nullable [] propertyReaders;
 
         private boolean hasNext;
 
         private final CTX ctx = createDatSetCtx();
 
-        public SqlFeatureResultSet(String sql, PreparedStatementSetter preparedStatementSetter, List<String> propertyNames) {
+        public SqlFeatureResultSet(String sql, @NotNull PreparedStatementSetter preparedStatementSetter, @Nullable List<String> propertyNames) {
             this.conn = dataConnect.getConnection();
             try {
                 pstm = conn.prepareStatement(sql);
@@ -279,7 +275,7 @@ public abstract class SqlDataSet<CTX extends DataSetCtx> extends DataSet<SqlData
         }
 
         @Override
-        public Feature next() {
+        public @NotNull Feature next() {
             try {
                 Feature feature;
                 Geometry geometry = readGeometry(rs, 1, ctx);

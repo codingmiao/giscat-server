@@ -7,11 +7,14 @@
  */
 package org.wowtools.giscatserver.main.service;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.wowtools.giscat.vector.mbexpression.Expression;
 import org.wowtools.giscat.vector.pojo.Feature;
 import org.wowtools.giscat.vector.pojo.FeatureCollection;
 import org.wowtools.giscatserver.main.structure.Layer;
 import org.wowtools.giscatserver.main.structure.LayerDataRule;
+import org.wowtools.giscatserver.main.util.AsyncTaskUtil;
 import org.wowtools.giscatserver.main.util.DataSetUtil;
 
 import java.util.ArrayList;
@@ -28,35 +31,58 @@ public class MapService {
 
     private final org.wowtools.giscatserver.main.structure.Map map;
 
-    public MapService(org.wowtools.giscatserver.main.structure.Map map) {
+    public MapService(@NotNull org.wowtools.giscatserver.main.structure.Map map) {
         this.map = map;
     }
 
     private static abstract class FeatureCollectionBuilder {
         protected abstract List<Feature> get(LayerDataRule rule, List<String> propertyNames, Expression<Boolean> layerExpression, java.util.Map<String, Object> expressionParams);
 
-        FeatureCollection build(org.wowtools.giscatserver.main.structure.Map map, List<String> propertyNames, String strExpression, java.util.Map<String, Object> expressionParams, byte zoom) {
+        private static final class SubRes {
+            final String layerName;
+            final List<Feature> layerFeatures;
+
+            public SubRes(String layerName, List<Feature> layerFeatures) {
+                this.layerName = layerName;
+                this.layerFeatures = layerFeatures;
+            }
+        }
+
+        @NotNull FeatureCollection build(org.wowtools.giscatserver.main.structure.@NotNull Map map, List<String> propertyNames, String strExpression, java.util.Map<String, Object> expressionParams, byte zoom) {
             org.wowtools.giscatserver.main.structure.Map.MapLayer[] mapLayers = map.getMapLayers();
             ArrayList expression = DataSetUtil.toJsonArray(strExpression);
-            ArrayList<String> layerNames = new ArrayList<>(mapLayers.length);
-            ArrayList<Integer> featureIndexes = new ArrayList<>(mapLayers.length);
-            List<Feature> features = new LinkedList<>();
-            int index = -1;
+
+            List<SubRes> subResList = new ArrayList<>(mapLayers.length);
+            List<Runnable> tasks = new ArrayList<>(mapLayers.length);
             for (org.wowtools.giscatserver.main.structure.Map.MapLayer mapLayer : mapLayers) {
                 LayerDataRule rule = mapLayer.getLayer().getRule(zoom);
                 if (null == rule) {
                     continue;
                 }
-                Expression<Boolean> layerExpression = Layer.mergeLayerExpression(rule, expression);
-                List<Feature> layerFeatures = get(rule, propertyNames, layerExpression, expressionParams);
-
-                layerNames.add(mapLayer.getName());
-
-                index += layerFeatures.size();
-                featureIndexes.add(index);
-
-                features.addAll(layerFeatures);
+                tasks.add(() -> {
+                    Expression<Boolean> layerExpression = Layer.mergeLayerExpression(rule, expression);
+                    List<Feature> layerFeatures = get(rule, propertyNames, layerExpression, expressionParams);
+                    if (layerFeatures.size() == 0) {
+                        return;
+                    }
+                    synchronized (subResList) {
+                        subResList.add(new SubRes(mapLayer.getName(), layerFeatures));
+                    }
+                });
             }
+            AsyncTaskUtil.executeAsyncTasks(tasks);
+
+            ArrayList<String> layerNames = new ArrayList<>(subResList.size());
+            ArrayList<Integer> featureIndexes = new ArrayList<>(subResList.size());
+            List<Feature> features = new LinkedList<>();
+            int index = -1;
+            for (SubRes subRes : subResList) {
+                layerNames.add(subRes.layerName);
+                index += subRes.layerFeatures.size();
+                featureIndexes.add(index);
+                features.addAll(subRes.layerFeatures);
+            }
+
             FeatureCollection featureCollection = new FeatureCollection();
             featureCollection.setFeatures(features);
             featureCollection.setHeaders(java.util.Map.of(
@@ -69,7 +95,7 @@ public class MapService {
 
     private static final class QueryFeatureCollectionBuilder extends FeatureCollectionBuilder {
         @Override
-        protected List<Feature> get(LayerDataRule rule, List<String> propertyNames, Expression<Boolean> layerExpression, java.util.Map<String, Object> expressionParams) {
+        protected @NotNull List<Feature> get(@NotNull LayerDataRule rule, List<String> propertyNames, Expression<Boolean> layerExpression, java.util.Map<String, Object> expressionParams) {
             return DataSetUtil.queryListByExpression(rule.getDataSet(), propertyNames, layerExpression, expressionParams);
         }
     }
@@ -86,7 +112,7 @@ public class MapService {
         }
 
         @Override
-        protected List<Feature> get(LayerDataRule rule, List<String> propertyNames, Expression<Boolean> layerExpression, java.util.Map<String, Object> expressionParams) {
+        protected @NotNull List<Feature> get(@NotNull LayerDataRule rule, List<String> propertyNames, Expression<Boolean> layerExpression, java.util.Map<String, Object> expressionParams) {
             return DataSetUtil.nearest(rule.getDataSet(), propertyNames, layerExpression, expressionParams, x, y, n);
         }
     }
@@ -101,7 +127,7 @@ public class MapService {
      * @return FeatureCollection features为查询结果，headers中layers属性描述了范围。
      * 如 {layerNames:['a','b'],featureIndexes:[5,13]} 表示图层a的结果为第0-5个要素，图层b的结果为第6-13个要素
      */
-    public FeatureCollection query(List<String> propertyNames, String strExpression, java.util.Map<String, Object> expressionParams, byte zoom) {
+    public FeatureCollection query(@Nullable List<String> propertyNames, @Nullable String strExpression, @Nullable java.util.Map<String, Object> expressionParams, byte zoom) {
         return new QueryFeatureCollectionBuilder().build(map, propertyNames, strExpression, expressionParams, zoom);
     }
 
@@ -118,7 +144,7 @@ public class MapService {
      * @return FeatureCollection features为查询结果，headers中layers属性描述了范围。
      * 如 {layerNames:['a','b'],featureIndexes:[5,13]} 表示图层a的结果为第0-5个要素，图层b的结果为第6-13个要素
      */
-    public FeatureCollection nearest(List<String> propertyNames, String strExpression, java.util.Map<String, Object> expressionParams, double x, double y, int n, byte zoom) {
+    public FeatureCollection nearest(@Nullable List<String> propertyNames, @Nullable String strExpression, @Nullable java.util.Map<String, Object> expressionParams, double x, double y, int n, byte zoom) {
         return new NearestFeatureCollectionBuilder(x, y, n).build(map, propertyNames, strExpression, expressionParams, zoom);
     }
 }

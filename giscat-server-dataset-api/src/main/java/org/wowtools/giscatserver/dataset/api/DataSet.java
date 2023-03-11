@@ -10,6 +10,8 @@ package org.wowtools.giscatserver.dataset.api;
 
 import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.wowtools.giscat.vector.mbexpression.Expression;
 import org.wowtools.giscat.vector.mbexpression.ExpressionParams;
 import org.wowtools.giscatserver.dataconnect.api.DataConnect;
@@ -37,7 +39,7 @@ public abstract class DataSet<DC extends DataConnect, ED extends ExpressionDiale
      * @param expression 表达式
      * @return 方言
      */
-    public abstract ED buildExpressionDialect(Expression<Boolean> expression);
+    public abstract ED buildExpressionDialect(@NotNull Expression<Boolean> expression);
 
     /**
      * 用方言进行条件查询。如果此数据集不支持方言，则抛出UnsupportedOperationException
@@ -47,7 +49,7 @@ public abstract class DataSet<DC extends DataConnect, ED extends ExpressionDiale
      * @param expressionParams  查询参数
      * @return FeatureResultSet
      */
-    public abstract FeatureResultSet queryByDialect(List<String> propertyNames, ED expressionDialect, ExpressionParams expressionParams);
+    public abstract FeatureResultSet queryByDialect(@Nullable List<String> propertyNames, @Nullable ED expressionDialect, @Nullable ExpressionParams expressionParams);
 
     /**
      * 用方言进行最邻近查询。如果此数据集不支持方言，则抛出UnsupportedOperationException
@@ -60,7 +62,7 @@ public abstract class DataSet<DC extends DataConnect, ED extends ExpressionDiale
      * @param n                 最多返回几条数据
      * @return FeatureResultSet
      */
-    public abstract FeatureResultSet nearestByDialect(List<String> propertyNames, ED expressionDialect, ExpressionParams expressionParams, double x, double y, int n);
+    public abstract FeatureResultSet nearestByDialect(@Nullable List<String> propertyNames, @Nullable ED expressionDialect, @Nullable ExpressionParams expressionParams, double x, double y, int n);
 
     /**
      * 构造一个查询上下文

@@ -1,4 +1,5 @@
 {
-"cacheBaseDir":"D:/_tmp/giscat-server-cache",
-  "threadNum": 16
+  "cacheBaseDir": "E:/_appcache/giscat-server-cache",
+  "threadPoolMaxNum": 32,
+  "roughTimePrecision": 10000
 }

@@ -7,6 +7,7 @@
  */
 package org.wowtools.giscatserver.dataset.sql.expression2sql.decision;
 
+import org.jetbrains.annotations.NotNull;
 import org.wowtools.giscat.vector.mbexpression.decision.Match;
 import org.wowtools.giscatserver.dataset.sql.Expression2SqlManager;
 import org.wowtools.giscatserver.dataset.sql.expression2sql.Expression2Sql;
@@ -19,7 +20,7 @@ import java.util.ArrayList;
  */
 public class Match2Sql extends Expression2Sql<Match> {
     @Override
-    public Part convert(Match expression, Expression2SqlManager expression2SqlManager) {
+    public @NotNull Part convert(@NotNull Match expression, Expression2SqlManager expression2SqlManager) {
         // 转为case sql
         ArrayList expressionArray = expression.getExpressionArray();
         Part input = getValue(expressionArray.get(1), expression2SqlManager);

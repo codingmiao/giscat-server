@@ -8,6 +8,8 @@
 
 package org.wowtools.giscatserver.dataset.postgis;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
@@ -49,7 +51,7 @@ public class PostgisSqlDataSet extends SqlDataSet<PostgisDataSetCtx> {
     }
 
     @Override
-    public FeatureResultSet nearestByDialect(List<String> propertyNames, SqlExpressionDialect expressionDialect, ExpressionParams expressionParams, double x, double y, int n) {
+    public @NotNull FeatureResultSet nearestByDialect(@Nullable List<String> propertyNames, @Nullable SqlExpressionDialect expressionDialect, @Nullable ExpressionParams expressionParams, double x, double y, int n) {
         //#最邻近查询
         //select t.*,st_astext(geom) from testline t
         //ORDER BY
@@ -89,6 +91,7 @@ public class PostgisSqlDataSet extends SqlDataSet<PostgisDataSetCtx> {
             int idx = 1;
             if (null != expressionDialect.getWherePart()) {
                 for (String paramName : expressionDialect.getParamNames()) {
+                    assert expressionParams != null;
                     Object obj = expressionParams.getValue(paramName);
                     if (ExpressionParams.empty == obj) {
                         obj = null;
@@ -103,18 +106,16 @@ public class PostgisSqlDataSet extends SqlDataSet<PostgisDataSetCtx> {
             pstm.setInt(idx + 1, n);
         };
 
-        SqlFeatureResultSet sqlFeatureResultSet = new SqlFeatureResultSet(sql, preparedStatementSetter, propertyNames);
-
-        return sqlFeatureResultSet;
+        return new SqlFeatureResultSet(sql, preparedStatementSetter, propertyNames);
     }
 
     @Override
-    protected PostgisDataSetCtx createDatSetCtx() {
+    protected @NotNull PostgisDataSetCtx createDatSetCtx() {
         return new PostgisDataSetCtx();
     }
 
     @Override
-    protected Geometry readGeometry(ResultSet rs, int shapeIndex, PostgisDataSetCtx ctx) throws SQLException {
+    protected @Nullable Geometry readGeometry(@NotNull ResultSet rs, int shapeIndex, @NotNull PostgisDataSetCtx ctx) throws SQLException {
         PGobject obj = (PGobject) rs.getObject(shapeIndex);
         if (null == obj) {
             return null;

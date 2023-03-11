@@ -8,6 +8,8 @@
 
 package org.wowtools.giscatserver.main.structure;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.wowtools.giscat.vector.mbexpression.Expression;
 import org.wowtools.giscatserver.dataset.api.DataSet;
 
@@ -25,13 +27,13 @@ public class LayerDataRule {
     private final byte maxZoom;
     private final DataSet dataSet;
 
-    private final ArrayList ruleExpression;
+    private final @Nullable ArrayList ruleExpression;
 
-    private final Expression<Boolean> ruleExpressionObj;
+    private final @Nullable Expression<Boolean> ruleExpressionObj;
 
     private final byte orderNum;
 
-    public LayerDataRule(byte minZoom, byte maxZoom, DataSet dataSet, ArrayList ruleExpression, byte orderNum) {
+    public LayerDataRule(byte minZoom, byte maxZoom, @NotNull DataSet dataSet, @Nullable ArrayList ruleExpression, byte orderNum) {
         if (maxZoom < 0) {
             maxZoom = Byte.MAX_VALUE;
         }
@@ -57,7 +59,7 @@ public class LayerDataRule {
         return dataSet;
     }
 
-    public ArrayList getRuleExpression() {
+    public @Nullable ArrayList getRuleExpression() {
         return ruleExpression;
     }
 
@@ -73,7 +75,7 @@ public class LayerDataRule {
         return orderNum;
     }
 
-    public Expression<Boolean> getRuleExpressionObj() {
+    public @Nullable Expression<Boolean> getRuleExpressionObj() {
         return ruleExpressionObj;
     }
 }

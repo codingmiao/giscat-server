@@ -9,9 +9,13 @@
 package org.wowtools.giscatserver.main.util;
 
 import cn.com.enersun.mywebgis.mywebgisservice.common.exception.OtherException;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.rocksdb.*;
 import org.rocksdb.util.SizeUnit;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
@@ -21,10 +25,16 @@ import java.nio.charset.StandardCharsets;
  * @author liuyu
  * @date 2023/3/7
  */
-public class FileCache {
+public class FileCache implements Closeable {
 
-    private final RocksDB timeDb;
-    private final RocksDB db;
+    @Override
+    public void close() throws IOException {
+        timeDb.close();
+        db.close();
+    }
+
+    private final @NotNull RocksDB timeDb;
+    private final @NotNull RocksDB db;
     private final String fileDir;
     private final long cacheTimeOut;
 
@@ -35,7 +45,7 @@ public class FileCache {
      * @param options      RocksDB参数 为空则用默认值
      * @param cacheTimeOut 缓存在多少毫秒后失效
      */
-    public FileCache(String fileDir, Options options, long cacheTimeOut) {
+    public FileCache(String fileDir, @Nullable Options options, long cacheTimeOut) {
         this.fileDir = fileDir;
         this.cacheTimeOut = cacheTimeOut;
         if (null == options) {
@@ -68,11 +78,13 @@ public class FileCache {
             timeDb = RocksDB.open(options, fileDir + "/time");
         } catch (RocksDBException e) {
             throw new OtherException("RocksDB初始化异常", e);
+        }finally {
+            options.close();
         }
     }
 
     public void put(byte[] bytesKey, byte[] bytesValue) {
-        byte[] cacheTimeBytes = long2Bytes(System.currentTimeMillis() + cacheTimeOut);
+        byte[] cacheTimeBytes = long2Bytes(RoughTimeUtil.getTimestamp() + cacheTimeOut);
         try {
             db.put(bytesKey, bytesValue);
             timeDb.put(bytesKey, cacheTimeBytes);
@@ -82,7 +94,7 @@ public class FileCache {
     }
 
     public byte[] get(byte[] bytesKey) {
-        long now = System.currentTimeMillis();
+        long now = RoughTimeUtil.getTimestamp();
         try {
             byte[] cacheTimeBytes = timeDb.get(bytesKey);
             if (null == cacheTimeBytes) {
@@ -127,11 +139,11 @@ public class FileCache {
         throw new OtherException("操作RocksDB出错: " + fileDir, e);
     }
 
-    public static byte[] string2Bytes(String str) {
+    public static byte[] string2Bytes(@NotNull String str) {
         return str.getBytes(StandardCharsets.UTF_8);
     }
 
-    public static String bytes2String(byte[] bytes) {
+    public static @NotNull String bytes2String(byte @NotNull [] bytes) {
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
@@ -141,7 +153,7 @@ public class FileCache {
         return buffer.array();
     }
 
-    public static long bytes2Long(byte[] bytes) {
+    public static long bytes2Long(byte @NotNull [] bytes) {
         ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
         buffer.put(bytes);
         buffer.flip();

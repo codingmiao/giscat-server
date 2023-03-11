@@ -8,13 +8,15 @@
 
 package org.wowtools.giscatserver.main.service;
 
+import cn.com.enersun.mywebgis.mywebgisservice.common.exception.OtherException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.wowtools.giscat.vector.mbexpression.Expression;
 import org.wowtools.giscat.vector.mbexpression.ExpressionParams;
 import org.wowtools.giscat.vector.mvt.MvtBuilder;
 import org.wowtools.giscat.vector.mvt.MvtLayer;
-import org.wowtools.giscat.vector.mvt.MvtParser;
-import org.wowtools.giscat.vector.pojo.Feature;
 import org.wowtools.giscat.vector.util.analyse.Bbox;
 import org.wowtools.giscatserver.dataset.api.ExpressionDialect;
 import org.wowtools.giscatserver.dataset.api.FeatureResultSet;
@@ -22,11 +24,13 @@ import org.wowtools.giscatserver.main.structure.LayerDataRule;
 import org.wowtools.giscatserver.main.structure.Map;
 import org.wowtools.giscatserver.main.util.AsyncTaskUtil;
 import org.wowtools.giscatserver.main.util.Constant;
+import org.wowtools.giscatserver.main.util.DataSetUtil;
 import org.wowtools.giscatserver.main.util.FileCache;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -36,9 +40,9 @@ import java.util.List;
  * @date 2023/3/6
  */
 @Slf4j
-public class VectorTileService {
+public class VectorTileService implements Closeable {
     // expression重写，增加范围查询  ["bboxIntersects", ["$xmin","$ymin","$xmax","$ymax"]]
-    private static final ArrayList bboxIntersectsExpression;
+    private static final @NotNull ArrayList bboxIntersectsExpression;
 
     static {
         ArrayList bboxExpression = new ArrayList<>(4);
@@ -54,20 +58,20 @@ public class VectorTileService {
 
     private static final class VectorTileServiceRule {
         private final LayerDataRule layerDataRule;
-        private final ExpressionDialect expressionDialect;
+        private final ExpressionDialect ruleExpressionDialect;
 
-        public VectorTileServiceRule(LayerDataRule layerDataRule, ExpressionDialect expressionDialect) {
+        public VectorTileServiceRule(LayerDataRule layerDataRule, ExpressionDialect ruleExpressionDialect) {
             this.layerDataRule = layerDataRule;
-            this.expressionDialect = expressionDialect;
+            this.ruleExpressionDialect = ruleExpressionDialect;
         }
     }
 
     public static final class VectorTileServiceLayer {
         private final Map.MapLayer mapLayer;
         private final List<String> propertyNames;
-        private final VectorTileServiceRule[] vtsRules;
+        private final VectorTileServiceRule @NotNull [] vtsRules;
 
-        public VectorTileServiceRule getVtsRule(byte z) {
+        public @Nullable VectorTileServiceRule getVtsRule(byte z) {
             if (z < 0) {
                 return vtsRules[0];
             }
@@ -81,7 +85,7 @@ public class VectorTileService {
 
         private final int simplifyDistance;
 
-        public VectorTileServiceLayer(Map.MapLayer mapLayer, List<String> propertyNames, int simplifyDistance) {
+        public VectorTileServiceLayer(Map.@NotNull MapLayer mapLayer, List<String> propertyNames, int simplifyDistance) {
             this.mapLayer = mapLayer;
             this.propertyNames = propertyNames;
             this.simplifyDistance = simplifyDistance;
@@ -90,17 +94,16 @@ public class VectorTileService {
             vtsRules = new VectorTileServiceRule[rules.length];
             for (int i = 0; i < vtsRules.length; i++) {
                 LayerDataRule rule = rules[i];
+                ExpressionDialect ed;
                 ArrayList ruleExpression;
                 if (null != rule.getRuleExpression()) {
-                    ruleExpression = new ArrayList(3);
-                    ruleExpression.add("all");
-                    ruleExpression.add(bboxIntersectsExpression);
-                    ruleExpression.add(rule.getRuleExpression());
+                    ed = DataSetUtil.mergeExpression(rule.getDataSet(), bboxIntersectsExpression, rule.getRuleExpression());
                 } else {
                     ruleExpression = bboxIntersectsExpression;
+                    Expression<Boolean> e = Expression.newInstance(ruleExpression);
+                    ed = rule.getDataSet().buildExpressionDialect(e);
                 }
-                ExpressionDialect ed = rules[i].getDataSet().buildExpressionDialect(Expression.newInstance(ruleExpression));
-                vtsRules[i] = new VectorTileServiceRule(rules[i], ed);
+                vtsRules[i] = new VectorTileServiceRule(rule, ed);
             }
 
         }
@@ -109,49 +112,38 @@ public class VectorTileService {
     private final VectorTileServiceLayer[] vectorTileServiceLayers;
 
 
-    private final FileCache fileCache;
+    private final @NotNull FileCache fileCache;
+    private final long cacheTimeOut;
 
-    public VectorTileService(Map map, long cacheTimeOut, VectorTileServiceLayer[] vectorTileServiceLayers) {
+    public VectorTileService(@NotNull Map map, long cacheTimeOut, @NotNull VectorTileServiceLayer[] vectorTileServiceLayers) {
         this.vectorTileServiceLayers = vectorTileServiceLayers;
+        this.cacheTimeOut = cacheTimeOut;
         String cacheDir = Constant.cacheBaseDir + "/VectorTileService/" + map.getId();
         new File(cacheDir).mkdirs();
         this.fileCache = new FileCache(cacheDir, null, cacheTimeOut);
     }
 
-    public byte[] exportVectorTile(byte z, int x, int y, String strExpression, java.util.Map<String, Object> expressionParams) {
-        byte[] fullBytes = exportFullVectorTile(z, x, y);
-        if (null == strExpression) {
-            return fullBytes;
-        }
-        // 如果用户输入条件非空，从fullBytes解析过滤
-        Expression<Boolean> expression = Expression.newInstance(strExpression);
-        ExpressionParams expressionParamsObj = new ExpressionParams(expressionParams);
-        MvtParser.MvtFeatureLayer[] mvtFeatureLayers = MvtParser.parse2Wgs84Coords(z, x, y, fullBytes, Constant.geometryFactory);
-        MvtBuilder mvtBuilder = new MvtBuilder(z, x, y, Constant.geometryFactory);
-        for (MvtParser.MvtFeatureLayer mvtFeatureLayer : mvtFeatureLayers) {
-            LinkedList<Feature> features = new LinkedList<>();
-            for (Feature feature : mvtFeatureLayer.getFeatures()) {
-                if (expression.getValue(feature, expressionParamsObj)) {
-                    features.add(feature);
-                }
-            }
-
-            if (features.size() > 0) {
-                MvtLayer layer = mvtBuilder.getOrCreateLayer(mvtFeatureLayer.getLayerName());
-                for (Feature feature : features) {
-                    layer.addClipedFeature(feature);
-                }
-            }
-
-        }
-        byte[] bytes = mvtBuilder.toBytes();
-        return bytes;
-    }
-
-    // 不带用户输入的过滤条件，查询全量数据瓦片
-    private byte[] exportFullVectorTile(byte z, int x, int y) {
+    public byte[] exportVectorTile(byte z, int x, int y, @Nullable String strExpression, java.util.@Nullable Map<String, Object> expressionParams) {
         StringBuilder sb = new StringBuilder(z);
         sb.append('/').append(x).append('/').append(y);
+        ArrayList expression;
+        if (null != strExpression) {
+            try {
+                expression = Constant.jsonMapper.readValue(strExpression, java.util.ArrayList.class);
+            } catch (JsonProcessingException e) {
+                throw new OtherException("反序列化参数异常", e);
+            }
+            sb.append(strExpression);
+            if (null != expressionParams) {
+                try {
+                    sb.append(Constant.jsonMapper.writeValueAsString(expressionParams));
+                } catch (JsonProcessingException e) {
+                    throw new OtherException("序列化参数异常", e);
+                }
+            }
+        } else {
+            expression = null;
+        }
         byte[] cacheKey = FileCache.string2Bytes(sb.toString());
         byte[] cache = fileCache.get(cacheKey);
         if (null != cache) {
@@ -161,12 +153,20 @@ public class VectorTileService {
         MvtBuilder mvtBuilder = new MvtBuilder(z, x, y, Constant.geometryFactory);
         //把参数绑上bbox范围
         Bbox bbox = mvtBuilder.getBbox();
-        java.util.Map<String, Object> expressionParams = java.util.Map.of(
-                "$xmin", bbox.xmin,
-                "$ymin", bbox.ymin,
-                "$xmax", bbox.xmax,
-                "$ymax", bbox.ymax
-        );
+        if (null == expressionParams) {
+            expressionParams = java.util.Map.of(
+                    "$xmin", bbox.xmin,
+                    "$ymin", bbox.ymin,
+                    "$xmax", bbox.xmax,
+                    "$ymax", bbox.ymax
+            );
+        } else {
+            expressionParams.put("$xmin", bbox.xmin);
+            expressionParams.put("$ymin", bbox.ymin);
+            expressionParams.put("$xmax", bbox.xmax);
+            expressionParams.put("$ymax", bbox.ymax);
+        }
+        final java.util.Map<String, Object> fExpressionParams = expressionParams;
         List<Runnable> tasks = new ArrayList<>(vectorTileServiceLayers.length);
         for (VectorTileServiceLayer vtsLayer : vectorTileServiceLayers) {
             VectorTileServiceRule vtsRule = vtsLayer.getVtsRule(z);
@@ -175,7 +175,21 @@ public class VectorTileService {
             }
             LayerDataRule layerDataRule = vtsRule.layerDataRule;
             tasks.add(() -> {
-                FeatureResultSet frs = layerDataRule.getDataSet().queryByDialect(vtsLayer.propertyNames, vtsRule.expressionDialect, new ExpressionParams(expressionParams));
+                ExpressionDialect expressionDialect;
+                if (null == expression) {
+                    expressionDialect = vtsRule.ruleExpressionDialect;
+                } else {
+                    if (null == vtsRule.layerDataRule.getRuleExpression()) {
+                        expressionDialect = DataSetUtil.mergeExpression(layerDataRule.getDataSet(),
+                                bboxIntersectsExpression, expression);
+                    } else {
+                        expressionDialect = DataSetUtil.mergeExpression(layerDataRule.getDataSet(),
+                                bboxIntersectsExpression, vtsRule.layerDataRule.getRuleExpression(), expression);
+                    }
+                }
+
+                FeatureResultSet frs = layerDataRule.getDataSet().queryByDialect(vtsLayer.propertyNames,
+                        expressionDialect, new ExpressionParams(fExpressionParams));
                 try {
                     if (frs.hasNext()) {
                         MvtLayer layer;
@@ -200,5 +214,19 @@ public class VectorTileService {
         byte[] bytes = mvtBuilder.toBytes();
         fileCache.put(cacheKey, bytes);
         return bytes;
+    }
+
+
+    public long getCacheTimeOut() {
+        return cacheTimeOut;
+    }
+
+    public void clearCache() {
+        fileCache.clear();
+    }
+
+    @Override
+    public void close() throws IOException {
+        fileCache.close();
     }
 }

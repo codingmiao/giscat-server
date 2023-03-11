@@ -7,6 +7,7 @@
  */
 package org.wowtools.giscatserver.dataset.sql.expression2sql.decision;
 
+import org.jetbrains.annotations.NotNull;
 import org.wowtools.giscat.vector.mbexpression.decision.Negation;
 import org.wowtools.giscatserver.dataset.sql.Expression2SqlManager;
 import org.wowtools.giscatserver.dataset.sql.expression2sql.Expression2Sql;
@@ -19,7 +20,7 @@ import java.util.ArrayList;
  */
 public class Negation2Sql extends Expression2Sql<Negation> {
     @Override
-    public Part convert(Negation expression, Expression2SqlManager expression2SqlManager) {
+    public @NotNull Part convert(@NotNull Negation expression, Expression2SqlManager expression2SqlManager) {
         ArrayList expressionArray = expression.getExpressionArray();
         Part p1 = getValue(expressionArray.get(1), expression2SqlManager);
         StringBuilder sb = new StringBuilder();

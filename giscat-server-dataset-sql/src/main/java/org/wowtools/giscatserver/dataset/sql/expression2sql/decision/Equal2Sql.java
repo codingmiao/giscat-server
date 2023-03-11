@@ -7,6 +7,7 @@
  */
 package org.wowtools.giscatserver.dataset.sql.expression2sql.decision;
 
+import org.jetbrains.annotations.NotNull;
 import org.wowtools.giscat.vector.mbexpression.decision.Equal;
 
 /**
@@ -16,7 +17,7 @@ import org.wowtools.giscat.vector.mbexpression.decision.Equal;
 public class Equal2Sql extends Compare2Sql<Equal> {
 
     @Override
-    protected String getSymbol() {
+    protected @NotNull String getSymbol() {
         return "=";
     }
 }

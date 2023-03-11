@@ -7,6 +7,7 @@
  */
 package org.wowtools.giscatserver.dataset.sql.expression2sql.lookup;
 
+import org.jetbrains.annotations.NotNull;
 import org.wowtools.giscat.vector.mbexpression.Expression;
 import org.wowtools.giscat.vector.mbexpression.lookup.Get;
 import org.wowtools.giscatserver.dataset.sql.Expression2SqlManager;
@@ -18,7 +19,7 @@ import org.wowtools.giscatserver.dataset.sql.expression2sql.Expression2Sql;
  */
 public class Get2Sql extends Expression2Sql<Get> {
     @Override
-    public Part convert(Get expression, Expression2SqlManager expression2SqlManager) {
+    public Part convert(@NotNull Get expression, @NotNull Expression2SqlManager expression2SqlManager) {
         Object o = expression.getExpressionArray().get(1);
         if (o instanceof Expression) {
             Expression subExpression = (Expression) o;

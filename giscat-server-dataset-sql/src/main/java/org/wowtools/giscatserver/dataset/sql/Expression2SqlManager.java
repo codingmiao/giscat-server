@@ -7,6 +7,8 @@
  */
 package org.wowtools.giscatserver.dataset.sql;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.reflections.Reflections;
 import org.wowtools.giscat.vector.mbexpression.Expression;
 import org.wowtools.giscat.vector.mbexpression.spatial.BboxIntersects;
@@ -35,7 +37,7 @@ public abstract class Expression2SqlManager {
      */
     public static final String ShapePlaceholder = "[shape]";
 
-    private static void putImplByClass(Expression2Sql impl, Map<Class<? extends Expression>, Expression2Sql> impls) {
+    private static void putImplByClass(@Nullable Expression2Sql impl, @NotNull Map<Class<? extends Expression>, Expression2Sql> impls) {
         if (null == impl) {
             return;
         }
@@ -99,7 +101,7 @@ public abstract class Expression2SqlManager {
         impls = Map.copyOf(_impls);
     }
 
-    public Expression2Sql getExpression2Sql(Expression expression) {
+    public @NotNull Expression2Sql getExpression2Sql(@NotNull Expression expression) {
         Expression2Sql impl = impls.get(expression.getClass());
         if (null == impl) {
             throw new UnsupportedOperationException("不支持的expression " + expression);
@@ -112,19 +114,19 @@ public abstract class Expression2SqlManager {
      *
      * @return BboxIntersects
      */
-    protected abstract Expression2Sql<BboxIntersects> getBboxIntersects();
+    protected abstract @Nullable Expression2Sql<BboxIntersects> getBboxIntersects();
 
     /**
      * 返回数据库具体的“GeoIntersects”空间查询实现
      *
      * @return GeoIntersects
      */
-    protected abstract Expression2Sql<GeoIntersects> getGeoIntersects();
+    protected abstract @Nullable Expression2Sql<GeoIntersects> getGeoIntersects();
 
     /**
      * 若数据库有一些自定义的Expression2Sql，可用此方法进行扩展并返回
      *
      * @return 若数据库有一些自定义的Expression2Sql，可用此方法进行扩展并返回一个list，若无，返回null
      */
-    protected abstract List<Expression2Sql> getExtends();
+    protected abstract @Nullable List<Expression2Sql> getExtends();
 }

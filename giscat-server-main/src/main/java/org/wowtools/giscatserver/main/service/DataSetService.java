@@ -8,6 +8,8 @@
 package org.wowtools.giscatserver.main.service;
 
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.wowtools.giscat.vector.mbexpression.Expression;
 import org.wowtools.giscat.vector.pojo.Feature;
 import org.wowtools.giscatserver.dataset.api.DataSet;
@@ -25,7 +27,7 @@ public class DataSetService {
 
     private final DataSet dataSet;
 
-    public DataSetService(DataSet dataSet) {
+    public DataSetService(@NotNull DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
@@ -37,8 +39,8 @@ public class DataSetService {
      * @param expressionParams 查询参数
      * @return features
      */
-    public List<Feature> query(List<String> propertyNames, String strExpression, java.util.Map<String, Object> expressionParams) {
-        Expression<Boolean> expression = Expression.newInstance(strExpression);
+    public @NotNull List<Feature> query(@Nullable List<String> propertyNames, @Nullable String strExpression, @Nullable java.util.Map<String, Object> expressionParams) {
+        Expression<Boolean> expression = null == strExpression ? null : Expression.newInstance(strExpression);
         return DataSetUtil.queryListByExpression(dataSet, propertyNames, expression, expressionParams);
     }
 
@@ -53,8 +55,8 @@ public class DataSetService {
      * @param n                最多返回几条数据
      * @return features
      */
-    public List<Feature> nearest(List<String> propertyNames, String strExpression, java.util.Map<String, Object> expressionParams, double x, double y, int n) {
-        Expression<Boolean> expression = Expression.newInstance(strExpression);
+    public @NotNull List<Feature> nearest(@Nullable List<String> propertyNames, @Nullable String strExpression, @Nullable java.util.Map<String, Object> expressionParams, double x, double y, int n) {
+        Expression<Boolean> expression = null == strExpression ? null : Expression.newInstance(strExpression);
         return DataSetUtil.nearest(dataSet, propertyNames, expression, expressionParams, x, y, n);
     }
 

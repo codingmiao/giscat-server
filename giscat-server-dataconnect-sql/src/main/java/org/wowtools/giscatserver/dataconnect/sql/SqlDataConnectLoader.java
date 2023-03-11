@@ -10,6 +10,7 @@ package org.wowtools.giscatserver.dataconnect.sql;
 import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.jetbrains.annotations.NotNull;
 import org.wowtools.giscatserver.dataconnect.api.DataConnectLoader;
 
 import java.util.Map;
@@ -24,7 +25,7 @@ import java.util.Properties;
 public class SqlDataConnectLoader extends DataConnectLoader<SqlDataConnect> {
 
     @Override
-    public SqlDataConnect load(String id, Map<String, Object> cpConfig) throws ConfigException {
+    public @NotNull SqlDataConnect load(String id, @NotNull Map<String, Object> cpConfig) throws ConfigException {
         HikariDataSource dataSource;
         Properties properties = new Properties(cpConfig.size());
         cpConfig.forEach((k, v) -> properties.setProperty(k, String.valueOf(v)));
