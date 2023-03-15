@@ -112,7 +112,7 @@ public class VectorTileService implements Closeable {
     private final VectorTileServiceLayer[] vectorTileServiceLayers;
 
 
-    private final @NotNull FileCache fileCache;
+    private final FileCache fileCache;
     private final long cacheTimeOut;
 
     public VectorTileService(@NotNull Map map, long cacheTimeOut, @NotNull VectorTileServiceLayer[] vectorTileServiceLayers) {
@@ -120,19 +120,21 @@ public class VectorTileService implements Closeable {
         this.cacheTimeOut = cacheTimeOut;
         String cacheDir = Constant.cacheBaseDir + "/VectorTileService/" + map.getId();
         new File(cacheDir).mkdirs();
-        this.fileCache = new FileCache(cacheDir, null, cacheTimeOut);
+        if (cacheTimeOut == 0) {
+            //不缓存
+            this.fileCache = null;
+        } else {
+            this.fileCache = new FileCache(cacheDir, null, cacheTimeOut);
+        }
     }
 
     public byte[] exportVectorTile(byte z, int x, int y, @Nullable String strExpression, java.util.@Nullable Map<String, Object> expressionParams) {
+        if (null == fileCache) {
+            return _exportVectorTile(z, x, y, strExpression, expressionParams);
+        }
         StringBuilder sb = new StringBuilder(z);
         sb.append('/').append(x).append('/').append(y);
-        ArrayList expression;
         if (null != strExpression) {
-            try {
-                expression = Constant.jsonMapper.readValue(strExpression, java.util.ArrayList.class);
-            } catch (JsonProcessingException e) {
-                throw new OtherException("反序列化参数异常", e);
-            }
             sb.append(strExpression);
             if (null != expressionParams) {
                 try {
@@ -141,13 +143,29 @@ public class VectorTileService implements Closeable {
                     throw new OtherException("序列化参数异常", e);
                 }
             }
-        } else {
-            expression = null;
         }
         byte[] cacheKey = FileCache.string2Bytes(sb.toString());
         byte[] cache = fileCache.get(cacheKey);
         if (null != cache) {
             return cache;
+        }
+
+        byte[] bytes = _exportVectorTile(z, x, y, strExpression, expressionParams);
+
+        fileCache.put(cacheKey, bytes);
+        return bytes;
+    }
+
+    private byte[] _exportVectorTile(byte z, int x, int y, @Nullable String strExpression, java.util.@Nullable Map<String, Object> expressionParams) {
+        ArrayList expression;
+        if (null != strExpression) {
+            try {
+                expression = Constant.jsonMapper.readValue(strExpression, java.util.ArrayList.class);
+            } catch (JsonProcessingException e) {
+                throw new OtherException("反序列化参数异常", e);
+            }
+        } else {
+            expression = null;
         }
 
         MvtBuilder mvtBuilder = new MvtBuilder(z, x, y, Constant.geometryFactory);
@@ -194,7 +212,7 @@ public class VectorTileService implements Closeable {
                     if (frs.hasNext()) {
                         MvtLayer layer;
                         synchronized (mvtBuilder) {
-                            layer = mvtBuilder.getOrCreateLayer(vtsLayer.mapLayer.getName(), vtsLayer.simplifyDistance);
+                            layer = mvtBuilder.createLayer(vtsLayer.mapLayer.getName(), vtsLayer.simplifyDistance);
                         }
                         do {
                             layer.addFeature(frs.next());
@@ -212,10 +230,8 @@ public class VectorTileService implements Closeable {
         }
         AsyncTaskUtil.executeAsyncTasks(tasks);
         byte[] bytes = mvtBuilder.toBytes();
-        fileCache.put(cacheKey, bytes);
         return bytes;
     }
-
 
     public long getCacheTimeOut() {
         return cacheTimeOut;
