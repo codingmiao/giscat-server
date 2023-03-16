@@ -26,10 +26,6 @@
         </dependency>
         <dependency>
             <groupId>org.wowtools</groupId>
-            <artifactId>giscat-server-dataset-postgis</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wowtools</groupId>
             <artifactId>catframe-dao</artifactId>
         </dependency>
         <dependency>

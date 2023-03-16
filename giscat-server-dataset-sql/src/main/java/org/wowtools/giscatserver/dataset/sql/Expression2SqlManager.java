@@ -9,11 +9,12 @@ package org.wowtools.giscatserver.dataset.sql;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.reflections.Reflections;
 import org.wowtools.giscat.vector.mbexpression.Expression;
 import org.wowtools.giscat.vector.mbexpression.spatial.BboxIntersects;
 import org.wowtools.giscat.vector.mbexpression.spatial.GeoIntersects;
 import org.wowtools.giscatserver.dataset.sql.expression2sql.Expression2Sql;
+import org.wowtools.giscatserver.dataset.sql.expression2sql.decision.*;
+import org.wowtools.giscatserver.dataset.sql.expression2sql.lookup.Get2Sql;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
@@ -22,7 +23,6 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Expression2Sql对象的管理工具
@@ -37,7 +37,19 @@ public abstract class Expression2SqlManager {
      */
     public static final String ShapePlaceholder = "[shape]";
 
-    private static void putImplByClass(@Nullable Expression2Sql impl, @NotNull Map<Class<? extends Expression>, Expression2Sql> impls) {
+    private static void putImplByClass(@Nullable Class<? extends Expression2Sql> aClass, @NotNull Map<Class<? extends Expression>, Expression2Sql> impls)
+            throws Exception {
+        if (Modifier.isAbstract(aClass.getModifiers())) {
+            //抽象类不做初始化
+            return;
+        }
+        Constructor<? extends Expression2Sql> implConstructor = aClass.getDeclaredConstructor();
+        implConstructor.setAccessible(true);
+        Expression2Sql impl = implConstructor.newInstance();
+        putImpl(impl, impls);
+    }
+
+    private static void putImpl(@Nullable Expression2Sql impl, @NotNull Map<Class<? extends Expression>, Expression2Sql> impls) {
         if (null == impl) {
             return;
         }
@@ -57,24 +69,22 @@ public abstract class Expression2SqlManager {
     private static final Map<Class<? extends Expression>, Expression2Sql> commonImpls;
 
     static {
-        //扫描包下的所有实现类，初始化一个实例并放入impls对象以便按Expression获取Expression2Sql实例
-        Reflections reflections = new Reflections("org.wowtools.giscatserver.dataset.sql.expression2sql");
-        Set<Class<? extends Expression2Sql>> classList = reflections.getSubTypesOf(Expression2Sql.class);
         Map<Class<? extends Expression>, Expression2Sql> impls = new HashMap<>();
-        for (Class<? extends Expression2Sql> aClass : classList) {
-            if (Modifier.isAbstract(aClass.getModifiers())) {
-                //抽象类不做初始化
-                continue;
-            }
-            try {
-                Constructor<? extends Expression2Sql> implConstructor = aClass.getDeclaredConstructor();
-                implConstructor.setAccessible(true);
-                Expression2Sql impl = implConstructor.newInstance();
-
-                putImplByClass(impl, impls);
-            } catch (Exception | Error e) {
-                throw new RuntimeException("Expression2Sql:" + aClass, e);
-            }
+        try {
+            putImplByClass(All2Sql.class, impls);
+            putImplByClass(Any2Sql.class, impls);
+            putImplByClass(Case2Sql.class, impls);
+            putImplByClass(Equal2Sql.class, impls);
+            putImplByClass(GreaterOrEqualThan2Sql.class, impls);
+            putImplByClass(GreaterThan2Sql.class, impls);
+            putImplByClass(LessOrEqualThan2Sql.class, impls);
+            putImplByClass(LessThan2Sql.class, impls);
+            putImplByClass(Match2Sql.class, impls);
+            putImplByClass(Negation2Sql.class, impls);
+            putImplByClass(NotEqual2Sql.class, impls);
+            putImplByClass(Get2Sql.class, impls);
+        } catch (Exception | Error e) {
+            throw new RuntimeException(e);
         }
         commonImpls = Map.copyOf(impls);
     }
@@ -88,13 +98,13 @@ public abstract class Expression2SqlManager {
     {
         Map<Class<? extends Expression>, Expression2Sql> _impls = new HashMap<>(commonImpls);
 
-        putImplByClass(getBboxIntersects(), _impls);
-        putImplByClass(getGeoIntersects(), _impls);
+        putImpl(getBboxIntersects(), _impls);
+        putImpl(getGeoIntersects(), _impls);
 
         List<Expression2Sql> extendImpls = getExtends();
         if (null != extendImpls) {
             for (Expression2Sql extendImpl : extendImpls) {
-                putImplByClass(extendImpl, _impls);
+                putImpl(extendImpl, _impls);
             }
         }
 

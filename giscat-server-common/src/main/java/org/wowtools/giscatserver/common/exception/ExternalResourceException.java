@@ -6,21 +6,22 @@
  * https://github.com/codingmiao/giscat/blob/main/LICENSE
  */
 
-package cn.com.enersun.mywebgis.mywebgisservice.common.exception;
+package org.wowtools.giscatserver.common.exception;
 
 /**
- * 其它异常
+ * 外部资源调用出错，例如配置的某个外部数据库连不上
  *
  * @author liuyu
- * @date 2023/3/3
+ * @date 2022/8/18
  */
-public class OtherException extends RuntimeException {
+public class ExternalResourceException extends RuntimeException {
 
-    public OtherException(String message) {
+    public ExternalResourceException(String message) {
         super(message);
     }
 
-    public OtherException(String message, Throwable cause) {
+    public ExternalResourceException(String message, Throwable cause) {
         super(message, cause);
     }
+
 }

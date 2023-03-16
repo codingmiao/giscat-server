@@ -8,11 +8,12 @@
 
 package org.wowtools.giscatserver.main;
 
-import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
-import cn.com.enersun.mywebgis.mywebgisservice.common.exception.InputException;
+import org.wowtools.giscatserver.common.exception.ConfigException;
+import org.wowtools.giscatserver.common.exception.InputException;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
+import org.springframework.cglib.core.internal.Function;
 import org.wowtools.common.utils.ResourcesReader;
 import org.wowtools.giscatserver.dataconnect.api.DataConnect;
 import org.wowtools.giscatserver.dataconnect.api.DataConnectLoader;
@@ -27,7 +28,10 @@ import org.wowtools.giscatserver.main.structure.LayerDataRule;
 import org.wowtools.giscatserver.main.structure.Map;
 import org.wowtools.giscatserver.main.util.Constant;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.*;
 
 
@@ -39,41 +43,10 @@ import java.util.*;
  */
 @Slf4j
 public class ConfigManager {
-    private static final java.util.Map<String, DataConnectLoader> dataConnectLoaders;
+    private static java.util.Map<String, DataConnectLoader> dataConnectLoaders;
 
-    private static final java.util.Map<String, DataSetLoader> dataSetLoaders;
+    private static java.util.Map<String, DataSetLoader> dataSetLoaders;
 
-    static {
-        try {
-            java.util.Map<String, DataConnectLoader> _dataConnectLoaders = new HashMap<>();
-            String strDataConnectLoaderImpls = ResourcesReader.readStr(ConfigManager.class, "DataConnectLoaderImpls.json");
-            JSONObject jo = new JSONObject(strDataConnectLoaderImpls);
-            for (java.util.Map.Entry<String, Object> entry : jo.toMap().entrySet()) {
-                String classPath = (String) entry.getValue();
-                String key = entry.getKey();
-                DataConnectLoader impl = (DataConnectLoader) Class.forName(classPath).getConstructor().newInstance();
-                _dataConnectLoaders.put(key, impl);
-            }
-            dataConnectLoaders = java.util.Map.copyOf(_dataConnectLoaders);
-        } catch (Exception e) {
-            throw new ConfigException("读取DataConnectLoader异常", e);
-        }
-
-        try {
-            java.util.Map<String, DataSetLoader> _dataSetLoaders = new HashMap<>();
-            String strDataSetLoaderImpls = ResourcesReader.readStr(ConfigManager.class, "DataSetLoaderImpls.json");
-            JSONObject jo = new JSONObject(strDataSetLoaderImpls);
-            for (java.util.Map.Entry<String, Object> entry : jo.toMap().entrySet()) {
-                String classPath = (String) entry.getValue();
-                String key = entry.getKey();
-                DataSetLoader impl = (DataSetLoader) Class.forName(classPath).getConstructor().newInstance();
-                _dataSetLoaders.put(key, impl);
-            }
-            dataSetLoaders = java.util.Map.copyOf(_dataSetLoaders);
-        } catch (Exception e) {
-            throw new ConfigException("读取DataConnectLoader异常", e);
-        }
-    }
 
     private static java.util.Map<String, DataConnect> dataConnects;
 
@@ -99,6 +72,7 @@ public class ConfigManager {
      */
     public static synchronized void load() {
         log.info("ConfigManager load start");
+        loadPlugIns();
         loadDataConnect();
         loadDataSet();
         loadLayerDataRule();
@@ -110,6 +84,103 @@ public class ConfigManager {
         loadMapSetService();
         loadVectorTileService();
         log.info("ConfigManager load success");
+    }
+
+    private static void loadPlugIns() {
+        //加载DataConnectLoader、DataSetLoader插件
+        URLClassLoader plugInClassLoader;
+        try {
+            HashSet<String> jarPaths = new HashSet<>();
+            //读addons目录下的插件
+            {
+                String addonsRoot = ResourcesReader.getRootPath(ConfigManager.class) + "/addons";
+                File root = new File(addonsRoot);
+                if (root.exists()) {
+                    for (File file : root.listFiles()) {
+                        String fileName = file.getName();
+                        if (fileName.startsWith(".jar", fileName.length() - 4)) {
+                            jarPaths.add(file.getAbsolutePath());
+                        }
+                    }
+                }
+            }
+
+            Function<String, Boolean> loader = jsonPath -> {
+                String strDataConnectLoaderImpls = ResourcesReader.readStr(ConfigManager.class, jsonPath);
+                JSONObject jo = new JSONObject(strDataConnectLoaderImpls);
+                for (java.util.Map.Entry<String, Object> entry : jo.toMap().entrySet()) {
+                    if (entry.getValue() instanceof java.util.Map) {
+                        java.util.Map<String, Object> cfg = (java.util.Map<String, Object>) entry.getValue();
+                        String jarPath = (String) cfg.get("jar");
+                        if (null != jarPath) {
+                            jarPaths.add(jarPath);
+                        }
+                    }
+                }
+                return true;
+            };
+            loader.apply("DataConnectLoaderImpls.json");
+            loader.apply("DataSetLoaderImpls.json");
+            URL[] urls = new URL[jarPaths.size()];
+            int i = 0;
+            for (String jarPath : jarPaths) {
+                log.info("load plug-in: {}", jarPath);
+                urls[i] = new URL("file:" + jarPath);
+                i++;
+            }
+            plugInClassLoader = new URLClassLoader(urls);
+        } catch (Exception e) {
+            throw new ConfigException("加载插件异常", e);
+        }
+
+        try {
+            java.util.Map<String, DataConnectLoader> _dataConnectLoaders = new HashMap<>();
+            String strDataConnectLoaderImpls = ResourcesReader.readStr(ConfigManager.class, "DataConnectLoaderImpls.json");
+            JSONObject jo = new JSONObject(strDataConnectLoaderImpls);
+            for (java.util.Map.Entry<String, Object> entry : jo.toMap().entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                String classPath;
+                if (value instanceof java.util.Map) {
+                    java.util.Map<String, Object> cfg = (java.util.Map<String, Object>) entry.getValue();
+                    classPath = (String) cfg.get("class");
+                } else {
+                    classPath = (String) value;
+                }
+                Class<? extends DataConnectLoader> extClass = (Class<? extends DataConnectLoader>) plugInClassLoader.loadClass(classPath);
+
+                DataConnectLoader impl = extClass.getConstructor().newInstance();
+                _dataConnectLoaders.put(key, impl);
+            }
+            dataConnectLoaders = java.util.Map.copyOf(_dataConnectLoaders);
+        } catch (Exception e) {
+            throw new ConfigException("读取DataConnectLoader异常", e);
+        }
+
+        try {
+            java.util.Map<String, DataSetLoader> _dataSetLoaders = new HashMap<>();
+            String strDataSetLoaderImpls = ResourcesReader.readStr(ConfigManager.class, "DataSetLoaderImpls.json");
+            JSONObject jo = new JSONObject(strDataSetLoaderImpls);
+            for (java.util.Map.Entry<String, Object> entry : jo.toMap().entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                String classPath;
+                if (value instanceof java.util.Map) {
+                    java.util.Map<String, Object> cfg = (java.util.Map<String, Object>) entry.getValue();
+                    classPath = (String) cfg.get("class");
+                } else {
+                    classPath = (String) value;
+                }
+
+                Class<? extends DataSetLoader> extClass = (Class<? extends DataSetLoader>) plugInClassLoader.loadClass(classPath);
+
+                DataSetLoader impl = extClass.getConstructor().newInstance();
+                _dataSetLoaders.put(key, impl);
+            }
+            dataSetLoaders = java.util.Map.copyOf(_dataSetLoaders);
+        } catch (Exception e) {
+            throw new ConfigException("读取DataSetLoader异常", e);
+        }
     }
 
     private static void loadDataConnect() {

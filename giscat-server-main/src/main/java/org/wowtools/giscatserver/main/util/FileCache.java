@@ -8,8 +8,8 @@
 
 package org.wowtools.giscatserver.main.util;
 
-import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
-import cn.com.enersun.mywebgis.mywebgisservice.common.exception.OtherException;
+import org.wowtools.giscatserver.common.exception.ConfigException;
+import org.wowtools.giscatserver.common.exception.OtherException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.rocksdb.*;

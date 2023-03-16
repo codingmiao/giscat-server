@@ -7,7 +7,7 @@
  */
 package org.wowtools.giscatserver.dataconnect.sql;
 
-import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ExternalResourceException;
+import org.wowtools.giscatserver.common.exception.ExternalResourceException;
 import lombok.extern.slf4j.Slf4j;
 import org.wowtools.giscatserver.dataconnect.api.DataConnect;
 

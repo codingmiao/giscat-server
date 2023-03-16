@@ -7,8 +7,8 @@
  */
 package org.wowtools.giscatserver.dataconnect.api;
 
-import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
-import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ExternalResourceException;
+import org.wowtools.giscatserver.common.exception.ConfigException;
+import org.wowtools.giscatserver.common.exception.ExternalResourceException;
 
 /**
  * 数据连接，数据连接是与数据存储目标的连接对象，例如连接到关系型数据库的Connection

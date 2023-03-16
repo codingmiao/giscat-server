@@ -8,7 +8,7 @@
 package org.wowtools.giscatserver.dataset.api;
 
 
-import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
+import org.wowtools.giscatserver.common.exception.ConfigException;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

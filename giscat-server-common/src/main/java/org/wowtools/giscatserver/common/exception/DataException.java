@@ -6,21 +6,21 @@
  * https://github.com/codingmiao/giscat/blob/main/LICENSE
  */
 
-package cn.com.enersun.mywebgis.mywebgisservice.common.exception;
+package org.wowtools.giscatserver.common.exception;
 
 /**
- * 用户输入错误引起的异常
+ * 数据错误引起的异常
  *
  * @author liuyu
  * @date 2023/3/3
  */
-public class InputException extends RuntimeException {
+public class DataException extends RuntimeException {
 
-    public InputException(String message) {
+    public DataException(String message) {
         super(message);
     }
 
-    public InputException(String message, Throwable cause) {
+    public DataException(String message, Throwable cause) {
         super(message, cause);
     }
 }

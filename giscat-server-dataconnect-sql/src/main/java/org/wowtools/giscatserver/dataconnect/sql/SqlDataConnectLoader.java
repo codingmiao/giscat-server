@@ -7,7 +7,7 @@
  */
 package org.wowtools.giscatserver.dataconnect.sql;
 
-import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
+import org.wowtools.giscatserver.common.exception.ConfigException;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.jetbrains.annotations.NotNull;

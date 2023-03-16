@@ -7,7 +7,7 @@
  */
 package org.wowtools.giscatserver.dataset.api;
 
-import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
+import org.wowtools.giscatserver.common.exception.ConfigException;
 import org.wowtools.giscatserver.dataconnect.api.DataConnect;
 
 import java.util.Map;

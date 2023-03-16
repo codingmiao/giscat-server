@@ -1,3 +1,6 @@
 {
-  "SqlDataConnectLoader": "org.wowtools.giscatserver.dataconnect.sql.SqlDataConnectLoader"
+  "SqlDataConnectLoader": {
+    "jar": "D:\\IDEA_me\\work\\mygithub\\giscat\\giscat-server\\giscat-server-dataconnect-sql\\target\\giscat-server-dataconnect-sql-1.0.0-STABLE.jar",
+    "class": "org.wowtools.giscatserver.dataconnect.sql.SqlDataConnectLoader"
+  }
 }

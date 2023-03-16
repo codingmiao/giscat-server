@@ -1,3 +1,6 @@
 {
-  "PostgisDataSetLoader": "org.wowtools.giscatserver.dataset.postgis.PostgisDataSetLoader"
+  "PostgisDataSetLoader": {
+    "jar": "D:\\IDEA_me\\work\\mygithub\\giscat\\giscat-server\\giscat-server-dataset-postgis\\target\\giscat-server-dataset-postgis-1.0.0-STABLE.jar",
+    "class": "org.wowtools.giscatserver.dataset.postgis.PostgisDataSetLoader"
+  }
 }

@@ -8,7 +8,7 @@
 
 package org.wowtools.giscatserver.dataset.postgis;
 
-import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
+import org.wowtools.giscatserver.common.exception.ConfigException;
 import org.jetbrains.annotations.NotNull;
 import org.wowtools.giscatserver.dataconnect.sql.SqlDataConnect;
 import org.wowtools.giscatserver.dataset.api.DataSetLoader;

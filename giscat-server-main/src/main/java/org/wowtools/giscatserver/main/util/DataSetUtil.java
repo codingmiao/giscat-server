@@ -8,7 +8,7 @@
 
 package org.wowtools.giscatserver.main.util;
 
-import cn.com.enersun.mywebgis.mywebgisservice.common.exception.OtherException;
+import org.wowtools.giscatserver.common.exception.OtherException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

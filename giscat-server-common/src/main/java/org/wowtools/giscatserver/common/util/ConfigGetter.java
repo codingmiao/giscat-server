@@ -6,9 +6,9 @@
  * https://github.com/codingmiao/giscat/blob/main/LICENSE
  */
 
-package cn.com.enersun.mywebgis.mywebgisservice.common.util;
+package org.wowtools.giscatserver.common.util;
 
-import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
+import org.wowtools.giscatserver.common.exception.ConfigException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;

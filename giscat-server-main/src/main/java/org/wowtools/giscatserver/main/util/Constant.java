@@ -8,9 +8,8 @@
 
 package org.wowtools.giscatserver.main.util;
 
-import cn.com.enersun.mywebgis.mywebgisservice.common.exception.ConfigException;
+import org.wowtools.giscatserver.common.exception.ConfigException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.wowtools.common.utils.ResourcesReader;
