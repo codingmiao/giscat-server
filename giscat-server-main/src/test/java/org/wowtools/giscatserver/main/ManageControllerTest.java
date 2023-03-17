@@ -12,7 +12,9 @@ public class ManageControllerTest extends ControllerTest {
 
     @Test
     public void reloadConfig() throws Exception {
-        String res = mockMvc.perform(MockMvcRequestBuilders.get("/Manage/ReloadConfig")
+        String res = mockMvc.perform(MockMvcRequestBuilders.get("/Manage/ReloadConfig/0")
+        ).andReturn().getResponse().getContentAsString();
+        res = mockMvc.perform(MockMvcRequestBuilders.get("/Manage/ReloadConfig/300")
         ).andReturn().getResponse().getContentAsString();
         Assert.assertEquals("success", res);
     }

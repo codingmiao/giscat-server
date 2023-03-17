@@ -8,13 +8,13 @@
 
 package org.wowtools.giscatserver.main;
 
-import org.wowtools.giscatserver.common.exception.ConfigException;
-import org.wowtools.giscatserver.common.exception.InputException;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import org.springframework.cglib.core.internal.Function;
 import org.wowtools.common.utils.ResourcesReader;
+import org.wowtools.giscatserver.common.exception.ConfigException;
+import org.wowtools.giscatserver.common.exception.InputException;
 import org.wowtools.giscatserver.dataconnect.api.DataConnect;
 import org.wowtools.giscatserver.dataconnect.api.DataConnectLoader;
 import org.wowtools.giscatserver.dataset.api.DataSet;
@@ -43,6 +43,7 @@ import java.util.*;
  */
 @Slf4j
 public class ConfigManager {
+    private static URLClassLoader plugInClassLoader = null;
     private static java.util.Map<String, DataConnectLoader> dataConnectLoaders;
 
     private static java.util.Map<String, DataSetLoader> dataSetLoaders;
@@ -68,27 +69,130 @@ public class ConfigManager {
     private static java.util.Map<String, VectorTileService> vectorTileServices;
 
     /**
-     * 加载配置信息为对象实例
+     * 配置加载步骤，按sort顺序决定类配置加载顺序:
+     * 0xx 插件加载
+     * 1xx 数据连接加载
+     * 2xx 数据集加载
+     * 3xx 图层加载
+     * 4xx 地图加载
+     * 5xx 服务加载
      */
-    public static synchronized void load() {
+    public enum LoadStep {
+        loadPlugIns(0) {
+            @Override
+            protected void load() {
+                loadPlugIns();
+            }
+        },
+        loadDataConnect(100) {
+            @Override
+            protected void load() {
+                loadDataConnect();
+            }
+        },
+        loadDataSet(200) {
+            @Override
+            protected void load() {
+                loadDataSet();
+            }
+        },
+        loadLayerDataRule(300) {
+            @Override
+            protected void load() {
+                loadLayerDataRule();
+            }
+        },
+        loadLayer(301) {
+            @Override
+            protected void load() {
+                loadLayer();
+            }
+        },
+        loadLayerInMaps(302) {
+            @Override
+            protected void load() {
+                loadLayerInMaps();
+            }
+        },
+        loadMap(400) {
+            @Override
+            protected void load() {
+                loadMap();
+            }
+        },
+        loadDataSetService(701) {
+            @Override
+            protected void load() {
+                loadDataSetService();
+            }
+        },
+        loadLayerService(702) {
+            @Override
+            protected void load() {
+                loadLayerService();
+            }
+        },
+        loadMapSetService(703) {
+            @Override
+            protected void load() {
+                loadMapSetService();
+            }
+        },
+        loadVectorTileService(704) {
+            @Override
+            protected void load() {
+                loadVectorTileService();
+            }
+        };
+
+        public final int sort;
+
+        protected abstract void load();
+
+        LoadStep(int sort) {
+            this.sort = sort;
+            loadSteps.add(this);
+            loadSteps.sort(Comparator.comparingInt(c -> c.sort));
+        }
+
+    }
+
+    private static final List<LoadStep> loadSteps = new ArrayList<>();
+
+    public static LoadStep getLoadStepBySort(int sort) {
+        for (LoadStep loadStep : loadSteps) {
+            if (loadStep.sort == sort) {
+                return loadStep;
+            }
+        }
+        throw new InputException("未找到LoadStep " + sort);
+    }
+
+
+    /**
+     * 加载配置信息为对象实例
+     *
+     * @param step 从第几个步骤开始加载，由于加载存在顺序关系，所以sort大于等于step.sort的步骤都会被执行
+     */
+    public static synchronized void load(LoadStep step) {
         log.info("ConfigManager load start");
-        loadPlugIns();
-        loadDataConnect();
-        loadDataSet();
-        loadLayerDataRule();
-        loadLayer();
-        loadLayerInMaps();
-        loadMap();
-        loadDataSetService();
-        loadLayerService();
-        loadMapSetService();
-        loadVectorTileService();
+        for (LoadStep loadStep : loadSteps) {
+            if (step.sort <= loadStep.sort) {
+                loadStep.load();
+            }
+        }
         log.info("ConfigManager load success");
     }
 
     private static void loadPlugIns() {
         //加载DataConnectLoader、DataSetLoader插件
-        URLClassLoader plugInClassLoader;
+        if (null != plugInClassLoader) {
+            try {
+                plugInClassLoader.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
         try {
             HashSet<String> jarPaths = new HashSet<>();
             //读addons目录下的插件
@@ -128,7 +232,7 @@ public class ConfigManager {
                 urls[i] = new URL("file:" + jarPath);
                 i++;
             }
-            plugInClassLoader = new URLClassLoader(urls);
+            plugInClassLoader = new URLClassLoader("giscat-plug-in", urls, Thread.currentThread().getContextClassLoader());
         } catch (Exception e) {
             throw new ConfigException("加载插件异常", e);
         }
@@ -181,6 +285,7 @@ public class ConfigManager {
         } catch (Exception e) {
             throw new ConfigException("读取DataSetLoader异常", e);
         }
+
     }
 
     private static void loadDataConnect() {

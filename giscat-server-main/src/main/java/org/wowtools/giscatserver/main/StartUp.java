@@ -25,6 +25,6 @@ public class StartUp {
 
     @PostConstruct
     private void init() {
-        ConfigManager.load();
+        ConfigManager.load(ConfigManager.LoadStep.loadPlugIns);
     }
 }

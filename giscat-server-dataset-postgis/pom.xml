@@ -16,6 +16,7 @@
         <dependency>
             <groupId>org.wowtools</groupId>
             <artifactId>giscat-server-dataconnect-sql</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.wowtools</groupId>

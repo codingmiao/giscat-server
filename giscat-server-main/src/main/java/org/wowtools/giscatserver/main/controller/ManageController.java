@@ -31,9 +31,9 @@ public class ManageController {
      *
      * @return success
      */
-    @RequestMapping("ReloadConfig")
-    public @NotNull String reloadConfig() {
-        ConfigManager.load();
+    @RequestMapping("ReloadConfig/{sort}")
+    public @NotNull String reloadConfig(@PathVariable int sort) {
+        ConfigManager.load(ConfigManager.getLoadStepBySort(sort));
         return "success";
     }
 

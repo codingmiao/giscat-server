@@ -80,8 +80,9 @@ public abstract class DataSet<DC extends DataConnect, ED extends ExpressionDiale
         try (FeatureResultSet frs = nearestByDialect(List.of(), null, null, 100, 20, 1)) {
             if (!frs.hasNext()) {
                 log.warn("DataSet {} 中没有数据，无法确认其正确性", id);
+            }else {
+                frs.next();
             }
-            frs.next();
         } catch (Exception e) {
             throw new ConfigException("test error", e);
         }
