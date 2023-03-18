@@ -500,7 +500,7 @@ public class ConfigManager {
             vectorTileServices.forEach((id, service) -> {
                 try {
                     service.close();
-                } catch (IOException e) {
+                } catch (Exception e) {
                     log.warn("VectorTileServices {}关闭出错，可能产生资源泄露", id);
                 }
             });

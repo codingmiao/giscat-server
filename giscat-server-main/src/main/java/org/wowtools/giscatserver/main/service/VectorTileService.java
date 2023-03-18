@@ -243,6 +243,8 @@ public class VectorTileService implements Closeable {
 
     @Override
     public void close() throws IOException {
-        fileCache.close();
+        if (null != fileCache) {
+            fileCache.close();
+        }
     }
 }
