@@ -30,12 +30,6 @@
         </encoder>
     </appender>
 
-    <!--    &lt;!&ndash; 记录special操作日志 &ndash;&gt;-->
-    <!--    <logger name="cn.com.enersun" level="INFO">-->
-    <!--        <appender-ref ref="STDOUT"/>-->
-    <!--        <appender-ref ref="FILE"/>-->
-    <!--    </logger>-->
-
     <!-- 配置好前面对应的appender -->
     <root level="INFO">
         <appender-ref ref="STDOUT"/>

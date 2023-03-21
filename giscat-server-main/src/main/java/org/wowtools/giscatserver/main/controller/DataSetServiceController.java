@@ -31,7 +31,7 @@ public class DataSetServiceController {
     /**
      * 条件查询
      *
-     * @param id         图层id
+     * @param id         数据集id
      * @param properties 返回的要素包含哪些属性,以半角逗号分隔
      * @param expression 表达式
      * @param bindParams 表达式绑定的参数
@@ -52,7 +52,7 @@ public class DataSetServiceController {
     /**
      * 最邻近查询
      *
-     * @param id         图层id
+     * @param id         数据集id
      * @param properties 返回的要素包含哪些属性,以半角逗号分隔
      * @param x          x
      * @param y          y

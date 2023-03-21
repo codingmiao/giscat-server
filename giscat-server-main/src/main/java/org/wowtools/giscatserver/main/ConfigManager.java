@@ -251,7 +251,13 @@ public class ConfigManager {
                 } else {
                     classPath = (String) value;
                 }
-                Class<? extends DataConnectLoader> extClass = (Class<? extends DataConnectLoader>) plugInClassLoader.loadClass(classPath);
+                Class<? extends DataConnectLoader> extClass;
+                try {
+                    extClass = (Class<? extends DataConnectLoader>) plugInClassLoader.loadClass(classPath);
+                } catch (Exception e) {
+                    log.warn("DataConnectLoader加载异常 " + key, e);
+                    continue;
+                }
 
                 DataConnectLoader impl = extClass.getConstructor().newInstance();
                 _dataConnectLoaders.put(key, impl);
@@ -275,8 +281,13 @@ public class ConfigManager {
                 } else {
                     classPath = (String) value;
                 }
-
-                Class<? extends DataSetLoader> extClass = (Class<? extends DataSetLoader>) plugInClassLoader.loadClass(classPath);
+                Class<? extends DataSetLoader> extClass;
+                try {
+                    extClass = (Class<? extends DataSetLoader>) plugInClassLoader.loadClass(classPath);
+                } catch (Exception e) {
+                    log.warn("DataSetLoader 加载异常 " + key);
+                    continue;
+                }
 
                 DataSetLoader impl = extClass.getConstructor().newInstance();
                 _dataSetLoaders.put(key, impl);

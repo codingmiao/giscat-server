@@ -81,22 +81,22 @@
             <dependency>
                 <artifactId>giscat-vector-pojo</artifactId>
                 <groupId>org.wowtools</groupId>
-                <version>g1.6.1</version>
+                <version>g1.7.0</version>
             </dependency>
             <dependency>
                 <artifactId>giscat-vector-util</artifactId>
                 <groupId>org.wowtools</groupId>
-                <version>g1.6.1</version>
+                <version>g1.7.0</version>
             </dependency>
             <dependency>
                 <artifactId>giscat-vector-mvt</artifactId>
                 <groupId>org.wowtools</groupId>
-                <version>g1.6.1</version>
+                <version>g1.7.0</version>
             </dependency>
             <dependency>
                 <artifactId>giscat-vector-mbexpression</artifactId>
                 <groupId>org.wowtools</groupId>
-                <version>g1.6.1</version>
+                <version>g1.7.0</version>
             </dependency>
             <dependency>
                 <groupId>com.zaxxer</groupId>
