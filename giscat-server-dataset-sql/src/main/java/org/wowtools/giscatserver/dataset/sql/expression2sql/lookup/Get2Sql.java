@@ -10,6 +10,7 @@ package org.wowtools.giscatserver.dataset.sql.expression2sql.lookup;
 import org.jetbrains.annotations.NotNull;
 import org.wowtools.giscat.vector.mbexpression.Expression;
 import org.wowtools.giscat.vector.mbexpression.lookup.Get;
+import org.wowtools.giscatserver.common.exception.InputException;
 import org.wowtools.giscatserver.dataset.sql.Expression2SqlManager;
 import org.wowtools.giscatserver.dataset.sql.expression2sql.Expression2Sql;
 
@@ -26,7 +27,11 @@ public class Get2Sql extends Expression2Sql<Get> {
             Expression2Sql subExpression2Sql = expression2SqlManager.getExpression2Sql(subExpression);
             return subExpression2Sql.convert(subExpression, expression2SqlManager);
         } else {
-            return new Part(String.valueOf(o), true);
+            String str = String.valueOf(o);
+            if (str.indexOf(" ") >= 0 || str.indexOf(";") >= 0 || str.indexOf("'") >= 0) {
+                throw new InputException("潜在的sql注入风险 " + str);
+            }
+            return new Part(str, true);
         }
     }
 }
